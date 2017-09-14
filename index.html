@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>CC Tool</title>
+	<meta charset="utf-8">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+</head>
+<body>
+
+<h1>Upload txt or xml data only!</h1>
+<form enctype="multipart/form-data">
+	Select txt file to upload:
+	<input type="file" name="fileToUpload" id="fileToUpload" />
+	<input type="button" value="Upload" />
+</form>
+<progress></progress>
+<br><br>
+<div id="response"></div>
+
+<script>
+// place any file checks here - this will be called whenever the file to upload changes
+$(":file").on("change", function(){
+	var file = this.files[0];
+	if (file.type != "text/xml" && file.type != "text/plain")
+	{
+		alert("Unsupported file type. Supportes file types: .txt, .xml");
+	}
+});
+
+$(":button").on("click", function(){
+	$.ajax({
+		url: "upload.php",
+		type: "POST",
+		
+		data: new FormData($("form")[0]),
+		
+		cache: false,
+		contentType: false,
+		processData: false,
+		
+		xhr: function(){
+			var myXhr = $.ajaxSettings.xhr();
+			if (myXhr.upload)
+			{
+				myXhr.upload.addEventListener('progress', function(e){
+					if (e.lengthComputable)
+					{
+						$('progress').attr({value: e.loaded, max: e.total});
+					}
+				}, false);
+			}
+			return myXhr;
+		},
+		
+		success: function(data){
+			$("#response").html(data);
+		}
+	});
+});
+</script>
+
+</body>
+</html>
