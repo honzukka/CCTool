@@ -24,6 +24,7 @@ $(":file").on("change", function(){
 	if (file.type != "text/xml" && file.type != "text/plain")
 	{
 		alert("Unsupported file type. Supportes file types: .txt, .xml");
+		this.form.reset();
 	}
 });
 
@@ -32,12 +33,14 @@ $(":button").on("click", function(){
 		url: "upload.php",
 		type: "POST",
 		
+		// intialize FormData with a file from the form
 		data: new FormData($("form")[0]),
 		
 		cache: false,
 		contentType: false,
 		processData: false,
 		
+		// a custom XmlHttpRequest allows for various callbacks on completion of the request itself
 		xhr: function(){
 			var myXhr = $.ajaxSettings.xhr();
 			if (myXhr.upload)
@@ -52,6 +55,7 @@ $(":button").on("click", function(){
 			return myXhr;
 		},
 		
+		// this callback receives data from the php code
 		success: function(data){
 			$("#response").html(data);
 		}
