@@ -15,7 +15,7 @@
 </form>
 <progress></progress>
 <br><br>
-<div id="response"></div>
+<pre id="response"></pre>
 
 <script>
 // place any file checks here - this will be called whenever the file to upload changes
@@ -30,7 +30,7 @@ $(":file").on("change", function(){
 
 $(":button").on("click", function(){
 	$.ajax({
-		url: "upload.php",
+		url: "process.php",
 		type: "POST",
 		
 		// intialize FormData with a file from the form
@@ -57,7 +57,9 @@ $(":button").on("click", function(){
 		
 		// this callback receives data from the php code
 		success: function(data){
-			$("#response").html(data);
+			//$("#response").html(data);
+			var obj = JSON.parse(data);
+			$("#response").html(JSON.stringify(obj, undefined, 2));
 		}
 	});
 });
