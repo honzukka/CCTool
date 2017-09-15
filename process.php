@@ -1,10 +1,10 @@
 <?php
 // UPLOAD
 $target_dir = "uploads/";
-$target_file = $target_dir . basename( $_FILES["fileToUpload"]["name"]);
+$target_file = $target_dir . basename( $_FILES["fileUpload"]["name"]);
 $uploadOk = 1;
 
-if (!move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) 
+if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file)) 
 {
 	$response_array = array("Error" => "There was an error uploading your file.");
 	$response_json = json_encode($response_array);
@@ -15,6 +15,8 @@ if (!move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file))
 // BUILD AN OBJECT
 libxml_use_internal_errors(true);
 $myfile = file_get_contents($target_file, true, NULL);
+
+sleep(2);
 
 // deserialize
 $xml = simplexml_load_string($myfile);

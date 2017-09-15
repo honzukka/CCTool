@@ -3,32 +3,57 @@
 <head>
 	<title>CC Tool</title>
 	<meta charset="utf-8">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+	[hidden] { display: none !important; }
+	</style>
 </head>
 <body>
 
-<h1>Upload txt or xml data only!</h1>
-<form enctype="multipart/form-data">
-	Select txt file to upload:
-	<input type="file" name="fileToUpload" id="fileToUpload" />
-	<input type="button" value="Upload" />
-</form>
-<progress></progress>
-<br><br>
-<pre id="response"></pre>
+<div class="container">
+	<h1>CC Tool</h1>
+	<br><br>
+	<form enctype="multipart/form-data">
+		<h4>Select a file to upload:</h4>
+		<br>
+		<div class="form-group">
+			<p class="text-muted" id="filenameDisplay">No file selected</p>
+			<label class="btn btn-default">
+				Browse <input type="file" id="fileUpload" name="fileUpload" hidden />
+			</label>
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-default" id="submitButton" disabled="true">Upload</button>
+		</div>
+	</form>
+	<br><br>
+	<pre id="response"></pre>
+</div>
 
 <script>
 // place any file checks here - this will be called whenever the file to upload changes
-$(":file").on("change", function(){
+$("#fileUpload").on("change", function(){
 	var file = this.files[0];
+	
+	// if the file type is wrong
 	if (file.type != "text/xml" && file.type != "text/plain")
 	{
-		alert("Unsupported file type. Supportes file types: .txt, .xml");
-		this.form.reset();
+		// no need to reset the form because the 'upload' button is disabled anyway
+		alert("Unsupported file type. Supported file types: .txt, .xml");
+		$("#filenameDisplay").html("No file selected");
+		$("#submitButton").prop("disabled", true);
+		return;
 	}
+	
+	$("#filenameDisplay").html(file.name);
+	$("#submitButton").prop("disabled", false);
 });
 
-$(":button").on("click", function(){
+$("#submitButton").on("click", function(){
+	$("#submitButton").prop("disabled", true);
 	$.ajax({
 		url: "process.php",
 		type: "POST",
@@ -39,25 +64,10 @@ $(":button").on("click", function(){
 		cache: false,
 		contentType: false,
 		processData: false,
-		
-		// a custom XmlHttpRequest allows for various callbacks on completion of the request itself
-		xhr: function(){
-			var myXhr = $.ajaxSettings.xhr();
-			if (myXhr.upload)
-			{
-				myXhr.upload.addEventListener('progress', function(e){
-					if (e.lengthComputable)
-					{
-						$('progress').attr({value: e.loaded, max: e.total});
-					}
-				}, false);
-			}
-			return myXhr;
-		},
-		
+
 		// this callback receives data from the php code
 		success: function(data){
-			//$("#response").html(data);
+			$("#submitButton").prop("disabled", false);
 			var obj = JSON.parse(data);
 			$("#response").html(JSON.stringify(obj, undefined, 2));
 		}
