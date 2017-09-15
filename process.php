@@ -16,8 +16,6 @@ if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file))
 libxml_use_internal_errors(true);
 $myfile = file_get_contents($target_file, true, NULL);
 
-sleep(2);
-
 // deserialize
 $xml = simplexml_load_string($myfile);
 

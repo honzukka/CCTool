@@ -38,6 +38,14 @@
 $("#fileUpload").on("change", function(){
 	var file = this.files[0];
 	
+	// if the file picker was cancelled
+	if (file == null)
+	{
+		$("#filenameDisplay").html("No file selected");
+		$("#submitButton").prop("disabled", true);
+		return;
+	}
+	
 	// if the file type is wrong
 	if (file.type != "text/xml" && file.type != "text/plain")
 	{
@@ -69,10 +77,163 @@ $("#submitButton").on("click", function(){
 		success: function(data){
 			$("#submitButton").prop("disabled", false);
 			var obj = JSON.parse(data);
-			$("#response").html(JSON.stringify(obj, undefined, 2));
+			if (obj.Error != "")
+			{
+				$("#response").html(obj.Error);
+				return;
+			}
+			
+			//$("#response").html(JSON.stringify(obj, undefined, 2));
+			buildView(obj);
 		}
 	});
 });
+
+function buildView(objJson)
+{
+	var accounts = objJson.Accounts;
+	
+	var viewHTML = "<div class='panel-group'>";
+	
+	var accountCounter = 1;
+	for (var account in accounts)
+	{
+		var accountViewHTML = "" +
+			"<div class='panel panel-default'>" +
+				"<div class='panel-heading'>" +
+					"<p class='panel-title'>" +
+						"<a data-toggle='collapse' href='#collapseAccount" + accountCounter + "'>" + "Account " + accounts[account]["Account Number"] + "</a>" +
+					"</p>" +
+				"</div>" +
+				"<div id='collapseAccount" + accountCounter + "' class='panel-collapse collapse'>" +
+					"<ul class='list-group'>";
+		
+		// insert account items
+		$.each(accounts[account], function(accountItemName, accountItemValue){
+		
+			// this item is going to be a table of transactions
+			if (accountItemName == "Transactions")
+			{
+				accountViewHTML += "" +
+					"<li class='list-group-item'>" +
+						"<div class='panel panel-default'>" +
+							"<div class='panel-heading'>" +
+								"<p class='panel-title'>" +
+									"<a data-toggle='collapse' href='#collapseTransactions" + accountCounter + "'>" + "Transactions" + "</a>" +
+								"</p>" +
+							"</div>" +
+							"<div id='collapseTransactions" + accountCounter + "' class='panel-collapse collapse'>" +
+								"<ul class='list-group'>";
+				
+				var transactionCounter = 1;
+				for (var transaction in accountItemValue)
+				{
+					accountViewHTML += "" +
+						"<div class='panel panel-default'>" +
+							"<div class='panel-heading'>" +
+								"<p class='panel-title'>" +
+									"<a data-toggle='collapse' href='#collapseTransaction" + accountCounter + "-" + transactionCounter + "'>" + "Transaction " + accountItemValue[transaction]["Processor Transaction ID"] + "</a>" +
+								"</p>" +
+							"</div>" +
+							"<div id='collapseTransaction" + accountCounter + "-" + transactionCounter + "' class='panel-collapse collapse'>" +
+								"<ul class='list-group'>";
+					
+					// insert transaction items
+					$.each(accountItemValue[transaction], function(transactionItemName, transactionItemValue){
+						accountViewHTML += "<li class='list-group-item'>" + transactionItemName + ":" + transactionItemValue +  "</li>";
+					});
+					
+					accountViewHTML += "</ul>" + "</div>" + "</div>";
+					transactionCounter++;
+				}
+				
+				accountViewHTML += "</ul>" + "</div>" + "</div>" + "</li>";
+			}
+			else
+			{
+				// simple item
+				accountViewHTML += "<li class='list-group-item'>" + accountItemName + ":" + accountItemValue +  "</li>";
+			}
+		});
+		
+		accountViewHTML += "</ul>" + "</div>" + "</div>";
+		viewHTML += accountViewHTML;
+		accountCounter++;
+	}
+	
+	viewHTML += "</div>";
+	$("#response").html(viewHTML);
+	/*
+	var testString = "" +
+		"<div class='panel-group'>" +
+			"<div class='panel panel-default'>" +
+				"<div class='panel-heading'>" +
+					"<p class='panel-title'>" +
+						"<a data-toggle='collapse' href='#collapse1'>" + "Account " + accounts[0]["Account Number"] + "</a>" +
+					"</p>" +
+				"</div>" +
+				"<div id='collapse1' class='panel-collapse collapse'>" +
+					"<ul class='list-group'>" +
+						"<li class='list-group-item'>One</li>" +
+						"<li class='list-group-item'>Two</li>" +
+						// recursion
+						"<li class='list-group-item'>" +
+							"<div class='panel panel-default'>" +
+								"<div class='panel-heading'>" +
+									"<p class='panel-title'>" +
+										"<a data-toggle='collapse' href='#collapse2'>" + "Transactions" + "</a>" +
+									"</p>" +
+								"</div>" +
+								"<div id='collapse2' class='panel-collapse collapse'>" +
+									"<ul class='list-group'>" +
+										"<li class='list-group-item'>One</li>" +
+										"<li class='list-group-item'>Two</li>" +
+										"<li class='list-group-item'>" +
+											"Three" +
+										"</li>" +
+									"</ul>" +
+								"</div>" +
+							"</div>" +
+						"</li>" +
+					"</ul>" +
+				"</div>" +
+			"</div>" +
+			// repetition
+			"<div class='panel panel-default'>" +
+				"<div class='panel-heading'>" +
+					"<p class='panel-title'>" +
+						"<a data-toggle='collapse' href='#collapse3'>" + "Account " + accounts[0]["Account Number"] + "</a>" +
+					"</p>" +
+				"</div>" +
+				"<div id='collapse3' class='panel-collapse collapse'>" +
+					"<ul class='list-group'>" +
+						"<li class='list-group-item'>One</li>" +
+						"<li class='list-group-item'>Two</li>" +
+						"<li class='list-group-item'>" +
+							// recursion
+							"<div class='panel panel-default'>" +
+								"<div class='panel-heading'>" +
+									"<p class='panel-title'>" +
+										"<a data-toggle='collapse' href='#collapse4'>" + "Transactions" + "</a>" +
+									"</p>" +
+								"</div>" +
+								"<div id='collapse4' class='panel-collapse collapse'>" +
+									"<ul class='list-group'>" +
+										"<li class='list-group-item'>One</li>" +
+										"<li class='list-group-item'>Two</li>" +
+										"<li class='list-group-item'>" +
+											"Three" +
+										"</li>" +
+									"</ul>" +
+								"</div>" +
+							"</div>" +
+						"</li>" +
+					"</ul>" +
+				"</div>" +
+			"</div>" +
+		"</div>";
+	*/
+}
 </script>
 
 </body>
