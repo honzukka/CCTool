@@ -55,8 +55,13 @@ foreach ($account_entities_array as $account)
 	$account_info = $account->AccountInformation_4300;
 	$hierarchy_addr = $account->HierarchyAddress_4410;
 	
+	// prepare a string that will be shown in the header panel
+	$obscured_account_number = " (*" . substr((string)($account->attributes()->AccountNumber), -4) . ")";
+	$account_panel_text = (string)($account_info->NameLine1) . $obscured_account_number;
+	
 	$account_json = array(
-		"Account Number" => (string)($account->attributes()->AccountNumber),
+		"Account Panel Text" => $account_panel_text,
+		//"Account Number" => (string)($account->attributes()->AccountNumber),
 		"Account Type Code" => (string)($account_info->AccountTypeCode),
 		"Effective Date" => (string)($account_info->EffectiveDate),
 		"Expiration Date" => (string)($account_info->ExpirationDate),
@@ -78,8 +83,12 @@ foreach ($account_entities_array as $account)
 		$financial_transaction = $transaction->FinancialTransaction_5000;
 		$card_acceptor = $transaction->CardAcceptor_5001;
 		
+		// prepare a string that will be shown in the header panel
+		$transaction_panel_text = (string)($financial_transaction->ProcessorTransactionId);
+		
 		$transaction_json = array(
-			"Processor Transaction ID" => (string)($financial_transaction->ProcessorTransactionId),
+			"Transaction Panel Text" => $transaction_panel_text,
+			//"Processor Transaction ID" => (string)($financial_transaction->ProcessorTransactionId),
 			"MasterCard Financial Transaction ID" => (string)($financial_transaction->MasterCardFinancialTransactionId),
 			"Acquirer Reference Data" => (string)($financial_transaction->AcquirerReferenceData),
 			"Card Holder Transaction Type" => (string)($financial_transaction->CardHolderTransactionType),
@@ -131,76 +140,4 @@ $result_json = json_encode($result_json_array);
 
 // OUTPUT
 print $result_json;
-
-/*
-$divCounter = 0;	
-$AccountEntityArray = $xml->IssuerEntity->CorporateEntity->AccountEntity;
-foreach($AccountEntityArray as $foo){
-			
-	$divCounter ++;
-	print "<pre> ------- CARD ACCOUNT: " . $divCounter . "--------" . PHP_EOL;
-	print "AccountNumber: " . $foo->attributes()->AccountNumber . "<br>"; 	//['AccountNumber']
-						
-	print "SequenceNum: " . $foo->AccountInformation_4300->HierarchyRecordHeader->SequenceNum . "<br>"; 
-	print "AccountTypeCode: " . $foo->AccountInformation_4300->AccountTypeCode . "<br>";
-	print "EffectiveDate: " . $foo->AccountInformation_4300->EffectiveDate . "<br>";
-	print "ExpirationDate: " . $foo->AccountInformation_4300->ExpirationDate . "<br>";
-	print "ExpirationDate: " . $foo->AccountInformation_4300->ExpirationDate . "<br>";
-	print "EmployeeId: " . $foo->AccountInformation_4300->EmployeeId . "<br>";
-	print "NameLine1: " . $foo->AccountInformation_4300->NameLine1 . "<br>";
-
-	print "AddressLine: " . $foo->HierarchyAddress_4410->AddressLine . "<br>";
-	print "City: " . $foo->HierarchyAddress_4410->City . "<br>";
-	print "StateProvince: " . $foo->HierarchyAddress_4410->StateProvince . "<br>";
-	print "CountryCode: " . $foo->HierarchyAddress_4410->CountryCode . "<br>";
-	print "PostalCode: " . $foo->HierarchyAddress_4410->PostalCode . "<br>";			
-	
-	$subDivCounter = 0;
-	$FinTransEntity = $foo->FinancialTransactionEntity;
-	foreach ($FinTransEntity as $bar){
-				
-		$subDivCounter ++;
-		print "<br>" . " ------ CARD TRANSACTION: " . $subDivCounter . " ------- " . PHP_EOL ;
-				
-		print "ProcessorTransactionId: " . $bar->FinancialTransaction_5000->ProcessorTransactionId . "<br>";
-		print "MasterCardFinancialTransactionId: " . $bar->FinancialTransaction_5000->MasterCardFinancialTransactionId . "<br>"; 
-		print "AcquirerReferenceData: " . $bar->FinancialTransaction_5000->AcquirerReferenceData . "<br>";
-		print "CardHolderTransactionType: " . $bar->FinancialTransaction_5000->CardHolderTransactionType . "<br>";
-		print "PostingDate: " . $bar->FinancialTransaction_5000->PostingDate . "<br>";
-		print "ProcessingDate: " . $bar->FinancialTransaction_5000->ProcessingDate . "<br>";
-		print "DebitOrCreditIndicator: " . $bar->FinancialTransaction_5000->DebitOrCreditIndicator . "<br>";
-		print "AmountInOriginalCurrency: " . $bar->FinancialTransaction_5000->AmountInOriginalCurrency . "<br>";
-		print "PostedCurrencyCode: " . $bar->FinancialTransaction_5000->PostedCurrencyCode . "<br>";
-		print "CustomIdentifier: " . $bar->FinancialTransaction_5000->CustomIdentifier . "<br>";
-				
-		print "CustomerRefValue1: " . $bar->FinancialTransaction_5000->CustomerRefValue1 . "<br>";
-		print "CustomerRefValue2: " . $bar->FinancialTransaction_5000->CustomerRefValue2 . "<br>";
-		print "CustomerRefValue3: " . $bar->FinancialTransaction_5000->CustomerRefValue3 . "<br>";
-		print "CustomerRefValue4: " . $bar->FinancialTransaction_5000->CustomerRefValue4 . "<br>";
-		print "CustomerRefValue5: " . $bar->FinancialTransaction_5000->CustomerRefValue5 . "<br>";
-		print "CustomerRefValue6: " . $bar->FinancialTransaction_5000->CustomerRefValue6 . "<br>";
-		print "CustomerRefValue7: " . $bar->FinancialTransaction_5000->CustomerRefValue7 . "<br>";
-		print "CustomerRefValue8: " . $bar->FinancialTransaction_5000->CustomerRefValue8 . "<br>";
-		print "CustomerRefValue9: " . $bar->FinancialTransaction_5000->CustomerRefValue9 . "<br>";
-		print "CustomerRefValue10: ". $bar->FinancialTransaction_5000->CustomerRefValue10 . "<br>";
-				
-		//TODO TotalTaxAmount, CustomerVATNum, MemoFlag
-		print "TransactionCategoryIndicator: " . $bar->FinancialTransaction_5000->TransactionCategoryIndicator . "<br>";
-										
-		print "CardAcceptorId: " . $bar->CardAcceptor_5001->CardAcceptorId . "<br>";
-		print "CardAcceptorName: " . $bar->CardAcceptor_5001->CardAcceptorName . "<br>";
-		print "CardAcceptorStreetAddress: " . $bar->CardAcceptor_5001->CardAcceptorStreetAddress . "<br>";
-		print "CardAcceptorStateProvince: " . $bar->CardAcceptor_5001->CardAcceptorStateProvince . "<br>";
-		print "CardAcceptorLocationPostalCode: " . $bar->CardAcceptor_5001->CardAcceptorLocationPostalCode . "<br>";
-		print "CardAcceptorCountryCode: " . $bar->CardAcceptor_5001->CardAcceptorCountryCode . "<br>";
-		print "CardAcceptorTelephoneNum: " . $bar->CardAcceptor_5001->CardAcceptorTelephoneNum . "<br>";
-		print "CardAcceptorBusinessCode: " . $bar->CardAcceptor_5001->CardAcceptorBusinessCode . "<br>";
-				
-		//TODO DUNNum, AustinTetraNum, CardAcceptorNAICSNum
-		print "CardAcceptorTaxIdIndicator: " . $bar->CardAcceptor_5001->CardAcceptorTaxIdIndicator . "<br>";
-				
-		//TODO CardAcceptorTaxId, CardAcceptorVATNum	
-	}
-}
-*/
 ?>
