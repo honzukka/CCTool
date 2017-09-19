@@ -6,7 +6,6 @@ error_reporting(E_ALL ^ E_WARNING);
 // UPLOAD
 $target_dir = "uploads/";
 $target_file = $target_dir . basename( $_FILES["fileUpload"]["name"]);
-$uploadOk = 1;
 
 if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file)) 
 {
@@ -47,21 +46,53 @@ if ($xml === false)
 }
 
 // BUILD REDUCED JSON
-$account_entities_array = $xml->IssuerEntity->CorporateEntity->AccountEntity;
 $accounts_json_array = array();
 
-foreach ($account_entities_array as $account)
+// find account entities
+foreach ($xml->IssuerEntity as $issuer_entity)
 {
-	$account_info = $account->AccountInformation_4300;
-	$hierarchy_addr = $account->HierarchyAddress_4410;
-	
+	foreach ($issuer_entity->CorporateEntity as $corporate_entity)
+	{
+		// go through corporate-level accounts
+		foreach ($corporate_entity->AccountEntity as $account_entity)
+		{
+			array_push($accounts_json_array, GetAccountJson($account_entity));
+		}
+		
+		// go through organization-level accounts
+		foreach ($corporate_entity->OrganizationPointEntity as $organization_point_entity)
+		{
+			foreach ($organization_point_entity->AccountEntity as $account_entity)
+			{
+				array_push($accounts_json_array, GetAccountJson($account_entity));
+			}
+		}
+	}
+}
+
+$result_json_array = array(
+	"Error" => "",
+	"Accounts" => $accounts_json_array
+);
+
+$result_json = json_encode($result_json_array);
+
+// OUTPUT
+print $result_json;
+
+// handles the account record and creates a JSON out of it
+function GetAccountJson($account_entity)
+{
+	$account_info = $account_entity->AccountInformation_4300;
+	$hierarchy_addr = $account_entity->HierarchyAddress_4410;
+		
 	// prepare a string that will be shown in the header panel
-	$obscured_account_number = " (*" . substr((string)($account->attributes()->AccountNumber), -4) . ")";
+	$obscured_account_number = " (*" . substr((string)($account_entity->attributes()->AccountNumber), -4) . ")";
 	$account_panel_text = (string)($account_info->NameLine1) . $obscured_account_number;
 	
 	$account_json = array(
 		"Account Panel Text" => $account_panel_text,
-		//"Account Number" => (string)($account->attributes()->AccountNumber),
+		//"Account Number" => (string)($account_entity->attributes()->AccountNumber),
 		"Account Type Code" => (string)($account_info->AccountTypeCode),
 		"Effective Date" => (string)($account_info->EffectiveDate),
 		"Expiration Date" => (string)($account_info->ExpirationDate),
@@ -75,7 +106,7 @@ foreach ($account_entities_array as $account)
 		"Postal Code" => (string)($hierarchy_addr->PostalCode)
 	);
 	
-	$financial_transactions_array = $account->FinancialTransactionEntity;
+	$financial_transactions_array = $account_entity->FinancialTransactionEntity;
 	$transactions_json_array = array();
 	
 	foreach ($financial_transactions_array as $transaction)
@@ -108,7 +139,9 @@ foreach ($account_entities_array as $account)
 			"Customer Ref Value 8" => (string)($financial_transaction->CustomerRefValue8),
 			"Customer Ref Value 9" => (string)($financial_transaction->CustomerRefValue9),
 			"Customer Ref Value 10" => (string)($financial_transaction->CustomerRefValue10),
-			//TODO TotalTaxAmount, CustomerVATNum, MemoFlag
+			"Total Tax Amount" => (string)($financial_transaction->TotalTaxAmount),
+			"Customer VAT Number" => (string)($financial_transaction->CustomerVATNum),
+			"Memo Flag" => (string)($financial_transaction->MemoFlag),
 			"Transaction Category Indicator" => (string)($financial_transaction->TransactionCategoryIndicator),
 			
 			"Card Acceptor ID" => (string)($card_acceptor->CardAcceptorId),
@@ -119,25 +152,19 @@ foreach ($account_entities_array as $account)
 			"Card Acceptor Country Code" => (string)($card_acceptor->CardAcceptorCountryCode),
 			"Card Acceptor Telephone Number" => (string)($card_acceptor->CardAcceptorTelephoneNum),
 			"Card Acceptor Business Code" => (string)($card_acceptor->CardAcceptorBusinessCode),
-			//TODO DUNNum, AustinTetraNum, CardAcceptorNAICSNum
-			"Card Acceptor Tax ID Indicator" => (string)($card_acceptor->CardAcceptorTaxIdIndicator)
-			//TODO CardAcceptorTaxId, CardAcceptorVATNum
+			"DUN Number" => (string)($card_acceptor->DUNNum),
+			"Austin Tetra Number" => (string)($card_acceptor->AustinTetraNum),
+			"Card Acceptor NAICS Number" => (string)($card_acceptor->CardAcceptorNAICSNum),
+			"Card Acceptor Tax ID Indicator" => (string)($card_acceptor->CardAcceptorTaxIdIndicator),
+			"Card Acceptor Tax ID" => (string)($card_acceptor->CardAcceptorTaxId),
+			"Card Acceptor VAT Number" => (string)($card_acceptor->CardAcceptorVATNum)
 		);
 		
 		array_push($transactions_json_array, $transaction_json);
 	}
 	
 	$account_json["Transactions"] = $transactions_json_array;
-	array_push($accounts_json_array, $account_json);
+	
+	return $account_json;
 }
-
-$result_json_array = array(
-	"Error" => "",
-	"Accounts" => $accounts_json_array
-);
-
-$result_json = json_encode($result_json_array);
-
-// OUTPUT
-print $result_json;
 ?>
