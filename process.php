@@ -1,4 +1,8 @@
 <?php
+// this supresses warning messages (unlink prints warning messages so an "invalid json" is sent to the html page)
+// error messages are still on
+error_reporting(E_ALL ^ E_WARNING);
+
 // UPLOAD
 $target_dir = "uploads/";
 $target_file = $target_dir . basename( $_FILES["fileUpload"]["name"]);
@@ -14,10 +18,19 @@ if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file))
 
 // BUILD AN OBJECT
 libxml_use_internal_errors(true);
-$myfile = file_get_contents($target_file, true, NULL);
+$feed_file = file_get_contents($target_file, true, NULL);
 
 // deserialize
-$xml = simplexml_load_string($myfile);
+$xml = simplexml_load_string($feed_file);
+
+// delete the file as it's no longer needed
+if (!unlink($target_file))
+{
+	$response_array = array("Error" => "There was an error while handling the file. Please contact server administrator about this.");
+	$response_json = json_encode($response_array);
+	print $response_json;
+	exit;
+}
 
 // if the deserialization failed, print error messages and exit
 if ($xml === false)
