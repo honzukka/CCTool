@@ -80,6 +80,8 @@ $result_json = json_encode($result_json_array);
 // OUTPUT
 print $result_json;
 
+// ------------------------ FUNCTIONS -----------------------------------------
+
 // handles the account record and creates a JSON out of it
 function GetAccountJson($account_entity)
 {
@@ -106,16 +108,15 @@ function GetAccountJson($account_entity)
 		"Postal Code" => (string)($hierarchy_addr->PostalCode)
 	);
 	
-	$financial_transactions_array = $account_entity->FinancialTransactionEntity;
 	$transactions_json_array = array();
 	
-	foreach ($financial_transactions_array as $transaction)
+	foreach ($account_entity->FinancialTransactionEntity as $transaction)
 	{
 		$financial_transaction = $transaction->FinancialTransaction_5000;
 		$card_acceptor = $transaction->CardAcceptor_5001;
 		
 		// prepare a string that will be shown in the header panel
-		$transaction_panel_text = (string)($financial_transaction->ProcessorTransactionId);
+		$transaction_panel_text = (string)($financial_transaction->ProcessorTransactionId) . " (" . (string)($financial_transaction->PostingDate) . ")";
 		
 		$transaction_json = array(
 			"Transaction Panel Text" => $transaction_panel_text,
