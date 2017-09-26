@@ -24,7 +24,7 @@
 			</label>
 		</div>
 		<div class="form-group">
-			<button type="submit" class="btn btn-default" id="submitButton" disabled="true">Upload</button>
+			<button type="button" class="btn btn-default" id="submitButton" disabled="true">Upload</button>
 		</div>
 	</form>
 	<br><br>
@@ -64,7 +64,7 @@ $("#submitButton").on("click", function(){
 	$("#submitButton").prop("disabled", true);
 	$.ajax({
 		url: "process_mastercard.php",
-		type: "POST",
+		method: "POST",
 		
 		// intialize FormData with a file from the form
 		data: new FormData($("form")[0]),
