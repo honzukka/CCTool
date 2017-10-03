@@ -1,86 +1,71 @@
 <?php
-// this supresses warning messages (unlink prints warning messages so an "invalid json" is sent to the html page)
-// error messages are still on
-error_reporting(E_ALL ^ E_WARNING);
-
-// UPLOAD
-$target_dir = "uploads/";
-$target_file = $target_dir . basename( $_FILES["fileUpload"]["name"]);
-
-if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file)) 
+// loads the file, deletes it and processes its content
+function process_mastercard($target_file_path)
 {
-	$response_array = array("Error" => "There was an error uploading your file.");
-	$response_json = json_encode($response_array);
-	print $response_json;
-	exit;
-}
+	// BUILD AN OBJECT
+	libxml_use_internal_errors(true);
+	$feed_file = file_get_contents($target_file_path, true, NULL);
 
-// BUILD AN OBJECT
-libxml_use_internal_errors(true);
-$feed_file = file_get_contents($target_file, true, NULL);
+	// deserialize
+	$xml = simplexml_load_string($feed_file);
 
-// deserialize
-$xml = simplexml_load_string($feed_file);
-
-// delete the file as it's no longer needed
-if (!unlink($target_file))
-{
-	$response_array = array("Error" => "There was an error while handling the file. Please contact server administrator about this.");
-	$response_json = json_encode($response_array);
-	print $response_json;
-	exit;
-}
-
-// if the deserialization failed, print error messages and exit
-if ($xml === false)
-{
-	$error_message = "Failed loading XML:" . PHP_EOL;
-	foreach(libxml_get_errors() as $error)
+	// delete the file as it's no longer needed
+	if (!unlink($target_file_path))
 	{
-		$error_message = $error_message . $error->message . PHP_EOL;
+		$response_array = array("Error" => "There was an error while handling the file. Please contact server administrator about this.");
+		$response_json = json_encode($response_array);
+		print $response_json;
+		exit;
 	}
-	$response_array = array("Error" => $error_message);
-	$response_json = json_encode($response_array);
-	print $response_json;
-	exit;
-}
 
-// BUILD REDUCED JSON
-$accounts_json_array = array();
-
-// find account entities
-foreach ($xml->IssuerEntity as $issuer_entity)
-{
-	foreach ($issuer_entity->CorporateEntity as $corporate_entity)
+	// if the deserialization failed, print error messages and exit
+	if ($xml === false)
 	{
-		// go through corporate-level accounts
-		foreach ($corporate_entity->AccountEntity as $account_entity)
+		$error_message = "Failed loading XML:" . PHP_EOL;
+		foreach(libxml_get_errors() as $error)
 		{
-			array_push($accounts_json_array, GetAccountJson($account_entity));
+			$error_message = $error_message . $error->message . PHP_EOL;
 		}
-		
-		// go through organization-level accounts
-		foreach ($corporate_entity->OrganizationPointEntity as $organization_point_entity)
+		$response_array = array("Error" => $error_message);
+		$response_json = json_encode($response_array);
+		print $response_json;
+		exit;
+	}
+	
+	// BUILD REDUCED JSON
+	$accounts_json_array = array();
+
+	// find account entities
+	foreach ($xml->IssuerEntity as $issuer_entity)
+	{
+		foreach ($issuer_entity->CorporateEntity as $corporate_entity)
 		{
-			foreach ($organization_point_entity->AccountEntity as $account_entity)
+			// go through corporate-level accounts
+			foreach ($corporate_entity->AccountEntity as $account_entity)
 			{
 				array_push($accounts_json_array, GetAccountJson($account_entity));
 			}
+			
+			// go through organization-level accounts
+			foreach ($corporate_entity->OrganizationPointEntity as $organization_point_entity)
+			{
+				foreach ($organization_point_entity->AccountEntity as $account_entity)
+				{
+					array_push($accounts_json_array, GetAccountJson($account_entity));
+				}
+			}
 		}
 	}
+
+	$result_json_array = array(
+		"Error" => "",
+		"Accounts" => $accounts_json_array
+	);
+
+	$result_json = json_encode($result_json_array);
+	
+	return $result_json;
 }
-
-$result_json_array = array(
-	"Error" => "",
-	"Accounts" => $accounts_json_array
-);
-
-$result_json = json_encode($result_json_array);
-
-// OUTPUT
-print $result_json;
-
-// ------------------------ FUNCTIONS -----------------------------------------
 
 // handles the account record and creates a JSON out of it
 function GetAccountJson($account_entity)

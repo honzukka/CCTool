@@ -63,7 +63,7 @@ $("#fileUpload").on("change", function(){
 $("#submitButton").on("click", function(){
 	$("#submitButton").prop("disabled", true);
 	$.ajax({
-		url: "process_mastercard.php",
+		url: "upload_and_process.php",
 		method: "POST",
 		
 		// intialize FormData with a file from the form
@@ -207,6 +207,48 @@ function GetCollapsibleHeaderPanelClosing()
 			]
 		},
 		...
+	]
+}
+*/
+
+/* NEW EXPECTED JSON FORMAT
+{
+	"Error": "error_message",   <--- error_message is empty if no error has occured
+	"Accounts": [
+		{ 
+			"Collapsible Panel Text": "header text",
+			"Item1": "Item1Value",
+			...,
+			
+			***** TRANSACTIONS ONLY FOR MASTERCARD *****
+			
+			"Transactions": [ 
+				{ 
+					"Collapsible Panel Text": "text",
+					"Item1": "Item1Value",
+					...
+				},
+				... 
+			]
+		},
+		...
+	],
+	
+	***** BELOW FIELDS ONLY FOR VISA *****
+	
+	"Cardholders": [
+		{
+			"Collapsible Panel Text": "header text",
+			"Item1": "Item1Value",
+			...
+		}
+	],
+	"Transactions": [
+		{
+			"Collapsible Panel Text": "header text",
+			"Item1": "Item1Value",
+			...
+		}
 	]
 }
 */
