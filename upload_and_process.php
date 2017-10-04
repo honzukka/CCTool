@@ -1,6 +1,7 @@
 <?php
-// rquire code necessary to process different card formats
+// require code necessary to process different card formats
 require_once "process_mastercard.php";
+require_once "process_visa40.php";
 
 // this supresses warning messages (unlink prints warning messages so an "invalid json" is sent to the html page)
 // error messages are still on
@@ -19,7 +20,8 @@ if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file_path))
 }
 
 // LOAD THE FILE, DELETE IT AND PROCESS THE CONTENT
-$response_json = process_mastercard($target_file_path);
+//$response_json = process_mastercard($target_file_path);
+$response_json = process_visa40($target_file_path);
 
 // OUTPUT
 print $response_json;

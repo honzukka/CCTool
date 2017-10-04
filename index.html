@@ -77,19 +77,21 @@ $("#submitButton").on("click", function(){
 		success: function(data){
 			$("#submitButton").prop("disabled", false);
 			$("#response").show();
+			$("#response").html(data);
 			//$("#response").html(JSON.stringify(data));
+			/*
 			var obj = JSON.parse(data);
 			if (obj.Error != "")
 			{
 				$("#response").html(obj.Error);
 				return;
 			}
-			
+			*/
 			//$("#response").html(JSON.stringify(obj, undefined, 2));
-			var view = buildView(obj);
+			//var view = buildView(obj);
 			
 			// show the view
-			$("#response").html(view);
+			//$("#response").html(view);
 		}
 	});
 });

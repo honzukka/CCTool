@@ -4,7 +4,15 @@ function process_mastercard($target_file_path)
 {
 	// BUILD AN OBJECT
 	libxml_use_internal_errors(true);
-	$feed_file = file_get_contents($target_file_path, true, NULL);
+	$feed_file = file_get_contents($target_file_path, true, NULL);	
+	
+	if ($feed_file === FALSE)
+	{
+		$response_array = array("Error" => "There was an error loading the file. Please contact the server administrator about this.");
+		$response_json = json_encode($response_array);
+		print $response_json;
+		exit;
+	}
 
 	// deserialize
 	$xml = simplexml_load_string($feed_file);
@@ -12,7 +20,7 @@ function process_mastercard($target_file_path)
 	// delete the file as it's no longer needed
 	if (!unlink($target_file_path))
 	{
-		$response_array = array("Error" => "There was an error while handling the file. Please contact server administrator about this.");
+		$response_array = array("Error" => "There was an error while handling the file. Please contact the server administrator about this.");
 		$response_json = json_encode($response_array);
 		print $response_json;
 		exit;
@@ -79,7 +87,7 @@ function GetAccountJson($account_entity)
 	
 	$account_json = array(
 		"Account Panel Text" => $account_panel_text,
-		//"Account Number" => (string)($account_entity->attributes()->AccountNumber),
+		//"Account Number" => (string)($account_entity->attributes()->AccountNumber),	<--- hidden as this is sensitive data
 		"Account Type Code" => (string)($account_info->AccountTypeCode),
 		"Effective Date" => (string)($account_info->EffectiveDate),
 		"Expiration Date" => (string)($account_info->ExpirationDate),
@@ -105,7 +113,7 @@ function GetAccountJson($account_entity)
 		
 		$transaction_json = array(
 			"Transaction Panel Text" => $transaction_panel_text,
-			//"Processor Transaction ID" => (string)($financial_transaction->ProcessorTransactionId),
+			//"Processor Transaction ID" => (string)($financial_transaction->ProcessorTransactionId),	<--- now included in the header panel text
 			"MasterCard Financial Transaction ID" => (string)($financial_transaction->MasterCardFinancialTransactionId),
 			"Acquirer Reference Data" => (string)($financial_transaction->AcquirerReferenceData),
 			"Card Holder Transaction Type" => (string)($financial_transaction->CardHolderTransactionType),
