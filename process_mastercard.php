@@ -67,7 +67,9 @@ function process_mastercard($target_file_path)
 
 	$result_json_array = array(
 		"Error" => "",
-		"Accounts" => $accounts_json_array
+		"Accounts" => $accounts_json_array,
+		"Cardholders" => "",
+		"Transactions" => ""
 	);
 
 	$result_json = json_encode($result_json_array);
@@ -86,7 +88,7 @@ function GetAccountJson($account_entity)
 	$account_panel_text = (string)($account_info->NameLine1) . $obscured_account_number;
 	
 	$account_json = array(
-		"Account Panel Text" => $account_panel_text,
+		"Collapsible Panel Text" => $account_panel_text,
 		//"Account Number" => (string)($account_entity->attributes()->AccountNumber),	<--- hidden as this is sensitive data
 		"Account Type Code" => (string)($account_info->AccountTypeCode),
 		"Effective Date" => (string)($account_info->EffectiveDate),
@@ -112,7 +114,7 @@ function GetAccountJson($account_entity)
 		$transaction_panel_text = (string)($financial_transaction->ProcessorTransactionId) . " (" . (string)($financial_transaction->PostingDate) . ")";
 		
 		$transaction_json = array(
-			"Transaction Panel Text" => $transaction_panel_text,
+			"Collapsible Panel Text" => $transaction_panel_text,
 			//"Processor Transaction ID" => (string)($financial_transaction->ProcessorTransactionId),	<--- now included in the header panel text
 			"MasterCard Financial Transaction ID" => (string)($financial_transaction->MasterCardFinancialTransactionId),
 			"Acquirer Reference Data" => (string)($financial_transaction->AcquirerReferenceData),

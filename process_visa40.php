@@ -19,8 +19,7 @@ function process_visa40($target_file_path)
 	// read the file line by line
 	while (!feof($file_handler))
 	{
-		$line = fgets($file_handler);
-		$line_array = preg_split("/[\t\ ]+/", $line);
+		$line_array = get_split_line($file_handler);
 		
 		// enter set
 		if ($line_array[0] == "6")
@@ -49,8 +48,7 @@ function process_set($file_handler, &$cardholders_json_array, &$accounts_json_ar
 {
 	while (!feof($file_handler))
 	{
-		$line = fgets($file_handler);
-		$line_array = preg_split("/[\t\ ]+/", $line);
+		$line_array = get_split_line($file_handler);
 		
 		// exit set
 		if ($line_array[0] == "7")
@@ -88,8 +86,7 @@ function process_cardholders($file_handler)
 	
 	while (!feof($file_handler))
 	{
-		$line = fgets($file_handler);
-		$line_array = preg_split("/[\t\ ]+/", $line);
+		$line_array = get_split_line($file_handler);
 		
 		// exit block
 		if ($line_array[0] == "9")
@@ -97,7 +94,7 @@ function process_cardholders($file_handler)
 			return $cardholders_json_array;
 		}
 		
-		$panel_text = $line_array[4] . " " . $line_array[5] 
+		$panel_text = $line_array[4] . " " . $line_array[5] ;
 		
 		$cardholder_json = array(
 			"Collapsible Panel Text" => $panel_text,
@@ -123,14 +120,24 @@ function process_accounts($file_handler)
 	
 	while (!feof($file_handler))
 	{
-		$line = fgets($file_handler);
-		$line_array = preg_split("/[\t\ ]+/", $line);
+		$line_array = get_split_line($file_handler);
 		
 		// exit block
 		if ($line_array[0] == "9")
 		{
 			return $accounts_json_array;
 		}
+		
+		$panel_text = $line_array[2];
+		
+		$account_json = array(
+			"Collapsible Panel Text" => $panel_text,
+			"Effective Date" => $line_array[4],
+			"Card Expire Date" => $line_array[7],
+			"Cardholder Identification" => $line_array[1]
+		);
+		
+		array_push($accounts_json_array, $account_json);
 	}
 	
 	// TODO: wrong file format here!
@@ -143,17 +150,46 @@ function process_transactions($file_handler)
 	
 	while (!feof($file_handler))
 	{
-		$line = fgets($file_handler);
-		$line_array = preg_split("/[\t\ ]+/", $line);
+		$line_array = get_split_line($file_handler);
 		
 		// exit block
 		if ($line_array[0] == "9")
 		{
 			return $transactions_json_array;
 		}
+		
+		$panel_text = $line_array[3];
+		
+		$transaction_json = array(
+			"Collapsible Panel Text" => $panel_text,
+			"Transaction Type Code" => $line_array[17],
+			"Posting Date" => $line_array[2],
+			"Source Amount" => $line_array[13],
+			"Source Currency Code" => $line_array[15],
+			"Billing Amount" => $line_array[14],
+			"Tax Amount" => $line_array[20],
+			"Customer VAT Number" => $line_array[27],
+			"Memo Post Flag" => $line_array[51],
+			"Card Acceptor" => $line_array[7],
+			"Supplier Name" => $line_array[8],
+			"Supplier City" => $line_array[9],
+			"Supplier State/Province" => $line_array[10],
+			"Supplier Postal Code" => $line_array[12],
+			"Supplier ISO Country Code" => $line_array[11],
+			"Supplier VAT Number" => $line_array[25],
+			"Account Number" => $line_array[1]
+		);
+		
+		array_push($transactions_json_array, $transaction_json);
 	}
 	
 	// TODO: wrong file format here!
+}
+
+function get_split_line($file_handler)
+{
+	$line = fgets($file_handler);
+	return preg_split("/[\t]+/", $line);
 }
 
 ?>

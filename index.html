@@ -77,21 +77,21 @@ $("#submitButton").on("click", function(){
 		success: function(data){
 			$("#submitButton").prop("disabled", false);
 			$("#response").show();
-			$("#response").html(data);
+			//$("#response").html(data);
 			//$("#response").html(JSON.stringify(data));
-			/*
+			
 			var obj = JSON.parse(data);
 			if (obj.Error != "")
 			{
 				$("#response").html(obj.Error);
 				return;
 			}
-			*/
+			
 			//$("#response").html(JSON.stringify(obj, undefined, 2));
-			//var view = buildView(obj);
+			var view = buildView(obj);
 			
 			// show the view
-			//$("#response").html(view);
+			$("#response").html(view);
 		}
 	});
 });
@@ -99,76 +99,95 @@ $("#submitButton").on("click", function(){
 // generates html code with collapsibles based on the json and returns it
 function buildView(objJson)
 {
-	var accounts = objJson.Accounts;
-	
 	// HTML 01 - open a panel group for the view
 	var viewHTML = "<div class='panel-group'>";
 	
-	var accountCounter = 1;
-	for (var account in accounts)
-	{
-		// HTML 02 - each account header is shown in a collapsible panel
-		var panelId = "collapseAccount" + accountCounter;
-		var panelText = accounts[account]["Account Panel Text"];
-		var accountViewHTML = GetCollapsibleHeaderPanelOpening(panelId, panelText);
-
-		// insert account items into the collapsible area of the account header panel
-		$.each(accounts[account], function(accountItemName, accountItemValue){
-		
-			// add simple items
-			if (accountItemName != "Transactions" && accountItemName != "Account Panel Text" && accountItemValue != "")
-			{
-				accountViewHTML += "<li class='list-group-item'><strong>" + accountItemName + "</strong>: <mark>" + accountItemValue +  "</mark></li>";
-			}
-			// transactions have another collapsible header panel
-			else if (accountItemName == "Transactions")
-			{
-				// HTML 03
-				accountViewHTML += "<li class='list-group-item'>";
-				
-				// HTML 04 - open the collapsible header panel for transactions
-				var panelId = "collapseTransactions" + accountCounter;
-				var panelText = "Transactions (" + Object.keys(accountItemValue).length + ")";
-				accountViewHTML += GetCollapsibleHeaderPanelOpening(panelId, panelText);
-
-				var transactionCounter = 1;
-				for (var transaction in accountItemValue)
-				{
-					// HTML 05 - each transaction has another collapsible panel header
-					var panelId = "collapseTransaction" + accountCounter + "-" + transactionCounter;
-					var panelText = accountItemValue[transaction]["Transaction Panel Text"];
-					accountViewHTML += GetCollapsibleHeaderPanelOpening(panelId, panelText);
-
-					// insert transaction items into the collapsible area of each transaction header panel
-					$.each(accountItemValue[transaction], function(transactionItemName, transactionItemValue){
-						if (transactionItemName != "Transaction Panel Text" && transactionItemValue != "")
-						{
-							accountViewHTML += "<li class='list-group-item'><strong>" + transactionItemName + "</strong>: <mark>" + transactionItemValue +  "</mark></li>";
-						}
-					});
-					
-					// HTML 05 - close the collapsible header panel for each transaction
-					accountViewHTML += GetCollapsibleHeaderPanelClosing();
-					transactionCounter++;
-				}
-				
-				// HTML 04 - close the transactions header panel
-				accountViewHTML += GetCollapsibleHeaderPanelClosing();
-				
-				// HTML 03
-				accountViewHTML += "</li>";
-			}
-		});
-		
-		// HTML 02 - close the account header panel
-		accountViewHTML += GetCollapsibleHeaderPanelClosing();
-		
-		viewHTML += accountViewHTML;
-		accountCounter++;
-	}
+	// HTML 02 - each section is shown in a collapsible panel
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Cardholders (" + Object.keys(objJson.Cardholders).length + ")");
+	viewHTML += buildSectionView(objJson.Cardholders, "Cardholders");
+	viewHTML += GetCollapsibleHeaderPanelClosing();
+	
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseAccounts", "Accounts (" + Object.keys(objJson.Accounts).length + ")");
+	viewHTML += buildSectionView(objJson.Accounts, "Accounts");
+	viewHTML += GetCollapsibleHeaderPanelClosing();
+	
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseTransactions", "Transactions (" + Object.keys(objJson.Transactions).length + ")");
+	viewHTML += buildSectionView(objJson.Transactions, "Transactions");
+	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
 	// HTML 01 - close the panel group
 	viewHTML += "</div>";
+	
+	return viewHTML;
+}
+
+// generates html code with collapsibles for each section based on the json and returns it
+function buildSectionView(section, sectionName)
+{
+	var viewHTML = "";
+	
+	var itemCounter = 1;
+	for (var item in section)
+	{
+		// HTML 03 - each account header is shown in a collapsible panel
+		var panelId = "collapse" + sectionName + itemCounter;
+		var panelText = section[item]["Collapsible Panel Text"];
+		var itemViewHTML = GetCollapsibleHeaderPanelOpening(panelId, panelText);
+
+		// insert account items into the collapsible area of the account header panel
+		$.each(section[item], function(itemName, itemValue){
+		
+			// add simple items
+			if (itemName != "Transactions" && itemName != "Collapsible Panel Text" && itemValue != "")
+			{
+				itemViewHTML  += "<li class='list-group-item'><strong>" + itemName + "</strong>: <mark>" + itemValue +  "</mark></li>";
+			}
+			// transactions have another collapsible header panel
+			else if (itemName == "Transactions")
+			{
+				// HTML 04
+				itemViewHTML  += "<li class='list-group-item'>";
+				
+				// HTML 05 - open the collapsible header panel for transactions
+				var panelId = "collapseTransactions" + itemCounter;
+				var panelText = "Transactions (" + Object.keys(itemValue).length + ")";
+				itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText);
+
+				var transactionCounter = 1;
+				for (var transaction in itemValue)
+				{
+					// HTML 06 - each transaction has another collapsible panel header
+					var panelId = "collapseTransaction" + itemCounter + "-" + transactionCounter;
+					var panelText = itemValue[transaction]["Collapsible Panel Text"];
+					itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText);
+
+					// insert transaction items into the collapsible area of each transaction header panel
+					$.each(itemValue[transaction], function(transactionItemName, transactionItemValue){
+						if (transactionItemName != "Transaction Panel Text" && transactionItemValue != "")
+						{
+							itemViewHTML  += "<li class='list-group-item'><strong>" + transactionItemName + "</strong>: <mark>" + transactionItemValue +  "</mark></li>";
+						}
+					});
+					
+					// HTML 06 - close the collapsible header panel for each transaction
+					itemViewHTML  += GetCollapsibleHeaderPanelClosing();
+					transactionCounter++;
+				}
+				
+				// HTML 05 - close the transactions header panel
+				itemViewHTML  += GetCollapsibleHeaderPanelClosing();
+				
+				// HTML 04
+				itemViewHTML  += "</li>";
+			}
+		});
+		
+		// HTML 03 - close the account header panel
+		itemViewHTML += GetCollapsibleHeaderPanelClosing();
+		
+		viewHTML += itemViewHTML;
+		itemCounter++;
+	}
 	
 	return viewHTML;
 }
@@ -192,28 +211,6 @@ function GetCollapsibleHeaderPanelClosing()
 }
 
 /* EXPECTED JSON FORMAT
-{
-	"Error": "error_message",   <--- error_message is empty if no error has occured
-	"Accounts": [
-		{ 
-			"Account Panel Text": "text",
-			"AccountItem1": "AccountItem1Value",
-			...,
-			"Transactions": [ 
-				{ 
-					"Transaction Panel Text": "text",
-					"TransactionItem1": "TransactionItem1Value",
-					...
-				},
-				... 
-			]
-		},
-		...
-	]
-}
-*/
-
-/* NEW EXPECTED JSON FORMAT
 {
 	"Error": "error_message",   <--- error_message is empty if no error has occured
 	"Accounts": [
