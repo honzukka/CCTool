@@ -117,7 +117,7 @@ function process_cardholders($file_handler)
 			return $cardholders_json_array;
 		}
 		
-		$panel_text = $line_array[4] . " " . $line_array[5] ;
+		$panel_text = $line_array[4] . " " . $line_array[5] . " (" . $line_array[2] . ")";
 		
 		$cardholder_json = array(
 			"Collapsible Panel Text" => $panel_text,
@@ -126,8 +126,8 @@ function process_cardholders($file_handler)
 			"Address Line 2" => $line_array[7],
 			"City" => $line_array[8],
 			"State/Province Code" => $line_array[9],
-			"Postal Code" => $line_array[11],
-			"Cardholder Identification" => $line_array[2]
+			"Postal Code" => $line_array[11]
+			//"Cardholder Identification" => $line_array[2]
 		);
 		
 		array_push($cardholders_json_array, $cardholder_json);
@@ -152,13 +152,13 @@ function process_accounts($file_handler)
 			return $accounts_json_array;
 		}
 		
-		$panel_text = $line_array[2];
+		$panel_text = $line_array[2] . " (" . $line_array[1] . ")";
 		
 		$account_json = array(
 			"Collapsible Panel Text" => $panel_text,
 			"Effective Date" => $line_array[4],
-			"Card Expire Date" => $line_array[7],
-			"Cardholder Identification" => $line_array[1]
+			"Card Expire Date" => $line_array[7]
+			//"Cardholder Identification" => $line_array[1]
 		);
 		
 		array_push($accounts_json_array, $account_json);
@@ -183,7 +183,7 @@ function process_transactions($file_handler)
 			return $transactions_json_array;
 		}
 		
-		$panel_text = $line_array[3];
+		$panel_text = $line_array[3] . " (" . $line_array[1] . ")";
 		
 		$transaction_json = array(
 			"Collapsible Panel Text" => $panel_text,
@@ -201,8 +201,8 @@ function process_transactions($file_handler)
 			"Supplier State/Province" => $line_array[10],
 			"Supplier Postal Code" => $line_array[12],
 			"Supplier ISO Country Code" => $line_array[11],
-			"Supplier VAT Number" => $line_array[25],
-			"Account Number" => $line_array[1]
+			"Supplier VAT Number" => $line_array[25]
+			//"Account Number" => $line_array[1]
 		);
 		
 		array_push($transactions_json_array, $transaction_json);
