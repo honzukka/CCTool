@@ -1,16 +1,16 @@
 <?php
+require_once "helper_functions.php";
+
 // loads the file, deletes it and processes its content
 function process_mastercard($target_file_path)
 {
 	// BUILD AN OBJECT
 	libxml_use_internal_errors(true);
-	$feed_file = file_get_contents($target_file_path, true, NULL);	
+	$feed_file = file_get_contents($target_file_path, true, NULL);
 	
 	if ($feed_file === FALSE)
 	{
-		$response_array = array("Error" => "There was an error loading the file. Please contact the server administrator about this.");
-		$response_json = json_encode($response_array);
-		print $response_json;
+		print error_response_json("There was an error loading the file. Please contact the server administrator about this.");
 		exit;
 	}
 
@@ -20,9 +20,7 @@ function process_mastercard($target_file_path)
 	// delete the file as it's no longer needed
 	if (!unlink($target_file_path))
 	{
-		$response_array = array("Error" => "There was an error while handling the file. Please contact the server administrator about this.");
-		$response_json = json_encode($response_array);
-		print $response_json;
+		print error_response_json("There was an error handling the file. Please contact the server administrator about this.");
 		exit;
 	}
 
@@ -34,9 +32,8 @@ function process_mastercard($target_file_path)
 		{
 			$error_message = $error_message . $error->message . PHP_EOL;
 		}
-		$response_array = array("Error" => $error_message);
-		$response_json = json_encode($response_array);
-		print $response_json;
+		
+		print error_response_json($error_message);
 		exit;
 	}
 	

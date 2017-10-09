@@ -1,4 +1,6 @@
 <?php
+require_once "helper_functions.php";
+
 // loads the file, deletes it and processes its content
 function process_visa40($target_file_path)
 {
@@ -6,15 +8,15 @@ function process_visa40($target_file_path)
 	
 	if ($file_handler === FALSE)
 	{
-		$response_array = array("Error" => "There was an error loading the file. Please contact the server administrator about this.");
-		$response_json = json_encode($response_array);
-		print $response_json;
+		print error_response_json("There was an error loading the file. Please contact the server administrator about this.");
 		exit;
 	}
 	
 	$cardholders_json_array = array();
 	$accounts_json_array = array();
 	$transactions_json_array = array();
+	
+	$visa_records_found = FALSE;
 	
 	// read the file line by line
 	while (!feof($file_handler))
@@ -24,12 +26,32 @@ function process_visa40($target_file_path)
 		// enter set
 		if ($line_array[0] == "6")
 		{
-			// TODO: check if the file is indeed VISA 4.0
+			// check if the file is indeed VISA 4.0
+			if (preg_match("/.*4\.0.*/", $line_array[7]) != 1)
+			{
+				print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+				exit_script($file_handler, $target_file_path);
+			}
+			
 			process_set($file_handler, $cardholders_json_array, $accounts_json_array, $transactions_json_array);
+			$visa_records_found = TRUE;
 		}
 	}
 	
+	if ($visa_records_found == FALSE)
+	{
+		print error_response_json("File either empty or in an incorrect format.");
+		exit_script($file_handler, $target_file_path);
+	}
+	
 	fclose($file_handler);
+	
+	// delete the file as it's no longer needed
+	if (!unlink($target_file_path))
+	{
+		print error_response_json("There was an error handling the file. Please contact the server administrator about this.");
+		exit;
+	}
 	
 	$result_json_array = array(
 		"Error" => "",
@@ -76,7 +98,8 @@ function process_set($file_handler, &$cardholders_json_array, &$accounts_json_ar
 		}
 	}
 	
-	// TODO: wrong file format here!
+	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	exit;
 }
 
 // returns an array of cardholders
@@ -110,7 +133,8 @@ function process_cardholders($file_handler)
 		array_push($cardholders_json_array, $cardholder_json);
 	}
 	
-	// TODO: wrong file format here!
+	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	exit_script($file_handler, $target_file_path);
 }
 
 // returns an array of accounts
@@ -140,7 +164,8 @@ function process_accounts($file_handler)
 		array_push($accounts_json_array, $account_json);
 	}
 	
-	// TODO: wrong file format here!
+	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	exit_script($file_handler, $target_file_path);
 }
 
 // returns an array of transactions
@@ -183,13 +208,27 @@ function process_transactions($file_handler)
 		array_push($transactions_json_array, $transaction_json);
 	}
 	
-	// TODO: wrong file format here!
+	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	exit_script($file_handler, $target_file_path);
 }
 
 function get_split_line($file_handler)
 {
 	$line = fgets($file_handler);
 	return preg_split("/[\t]+/", $line);
+}
+
+function exit_script($file_handler, $target_file_path)
+{
+	fclose($file_handler);
+	
+	// delete the file
+	if (!unlink($target_file_path))
+	{
+		print error_response_json("There was an error handling the file. Please contact the server administrator about this.");
+	}
+	
+	exit;
 }
 
 ?>

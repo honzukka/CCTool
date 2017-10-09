@@ -2,6 +2,7 @@
 // require code necessary to process different card formats
 require_once "process_mastercard.php";
 require_once "process_visa40.php";
+require_once "helper_functions.php";
 
 // this supresses warning messages (unlink prints warning messages so an "invalid json" is sent to the html page)
 // error messages are still on
@@ -13,15 +14,21 @@ $target_file_path = $target_dir . basename( $_FILES["fileUpload"]["name"]);
 
 if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file_path)) 
 {
-	$response_array = array("Error" => "There was an error uploading your file.");
-	$response_json = json_encode($response_array);
-	print $response_json;
+	print error_response_json("There was an error uploading your file.");
 	exit;
 }
 
+$response_json = array();
+
 // LOAD THE FILE, DELETE IT AND PROCESS THE CONTENT
-//$response_json = process_mastercard($target_file_path);
-$response_json = process_visa40($target_file_path);
+if ($_POST["seltype"] == "mc")
+{
+	$response_json = process_mastercard($target_file_path);
+}
+else if ($_POST["seltype"] == "v40")
+{
+	$response_json = process_visa40($target_file_path);
+}
 
 // OUTPUT
 print $response_json;
