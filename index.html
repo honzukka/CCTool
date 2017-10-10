@@ -3,13 +3,13 @@
 <head>
 	<title>CC Tool</title>
 	<meta charset="utf-8">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="bootstrap-custom/css/bootstrap.min.css">
 	<link rel="stylesheet" href="additional_styles.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="bootstrap-custom/js/bootstrap.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body>
+<body id="bootstrap-overrides">
 
 <div class="container">
 	<h1>CC Tool</h1>
@@ -108,23 +108,52 @@ $("#submitButton").on("click", function(){
 	});
 });
 
-// generates html code with collapsibles based on the json and returns it
 function buildView(objJson)
+{
+	switch ($("#seltype").val())
+	{
+		case "mc":
+			return buildViewMastercard(objJson);
+		case "v40":
+			return buildViewVisa(objJson);
+		default:
+			return "error";
+	}
+}
+
+// generates html code with collapsibles based on the json and returns it
+function buildViewVisa(objJson)
 {
 	// HTML 01 - open a panel group for the view
 	var viewHTML = "<div class='panel-group'>";
 	
 	// HTML 02 - each section is shown in a collapsible panel
-	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Cardholders (" + Object.keys(objJson.Cardholders).length + ")");
-	viewHTML += buildSectionView(objJson.Cardholders, "Cardholders");
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Cardholders (" + Object.keys(objJson.Cardholders).length + ")", "panel-primary");
+	viewHTML += buildViewSection(objJson.Cardholders, "Cardholders");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
-	viewHTML += GetCollapsibleHeaderPanelOpening("collapseAccounts", "Accounts (" + Object.keys(objJson.Accounts).length + ")");
-	viewHTML += buildSectionView(objJson.Accounts, "Accounts");
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseAccounts", "Accounts (" + Object.keys(objJson.Accounts).length + ")", "panel-primary");
+	viewHTML += buildViewSection(objJson.Accounts, "Accounts");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
-	viewHTML += GetCollapsibleHeaderPanelOpening("collapseTransactions", "Transactions (" + Object.keys(objJson.Transactions).length + ")");
-	viewHTML += buildSectionView(objJson.Transactions, "Transactions");
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseTransactions", "Transactions (" + Object.keys(objJson.Transactions).length + ")", "panel-primary");
+	viewHTML += buildViewSection(objJson.Transactions, "Transactions");
+	viewHTML += GetCollapsibleHeaderPanelClosing();
+	
+	// HTML 01 - close the panel group
+	viewHTML += "</div>";
+	
+	return viewHTML;
+}
+
+function buildViewMastercard(objJson)
+{
+	// HTML 01 - open a panel group for the view
+	var viewHTML = "<div class='panel-group'>";
+	
+	// HTML 02 - each section is shown in a collapsible panel
+	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Accounts (" + Object.keys(objJson.Accounts).length + ")", "panel-primary");
+	viewHTML += buildViewSection(objJson.Accounts, "Accounts");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
 	// HTML 01 - close the panel group
@@ -134,7 +163,7 @@ function buildView(objJson)
 }
 
 // generates html code with collapsibles for each section based on the json and returns it
-function buildSectionView(section, sectionName)
+function buildViewSection(section, sectionName)
 {
 	var viewHTML = "";
 	
@@ -144,7 +173,7 @@ function buildSectionView(section, sectionName)
 		// HTML 03 - each account header is shown in a collapsible panel
 		var panelId = "collapse" + sectionName + itemCounter;
 		var panelText = section[item]["Collapsible Panel Text"];
-		var itemViewHTML = GetCollapsibleHeaderPanelOpening(panelId, panelText);
+		var itemViewHTML = GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-default");
 
 		// insert account items into the collapsible area of the account header panel
 		$.each(section[item], function(itemName, itemValue){
@@ -163,7 +192,7 @@ function buildSectionView(section, sectionName)
 				// HTML 05 - open the collapsible header panel for transactions
 				var panelId = "collapseTransactions" + itemCounter;
 				var panelText = "Transactions (" + Object.keys(itemValue).length + ")";
-				itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText);
+				itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-primary");
 
 				var transactionCounter = 1;
 				for (var transaction in itemValue)
@@ -171,7 +200,7 @@ function buildSectionView(section, sectionName)
 					// HTML 06 - each transaction has another collapsible panel header
 					var panelId = "collapseTransaction" + itemCounter + "-" + transactionCounter;
 					var panelText = itemValue[transaction]["Collapsible Panel Text"];
-					itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText);
+					itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-default");
 
 					// insert transaction items into the collapsible area of each transaction header panel
 					$.each(itemValue[transaction], function(transactionItemName, transactionItemValue){
@@ -204,10 +233,10 @@ function buildSectionView(section, sectionName)
 	return viewHTML;
 }
 
-function GetCollapsibleHeaderPanelOpening(panelId, panelText)
+function GetCollapsibleHeaderPanelOpening(panelId, panelText, panelClassString)
 {
 	return "" +
-		"<div class='panel panel-default'>" +
+		"<div class='panel " + panelClassString + "'>" +
 			"<div class='panel-heading'>" +
 				"<p class='panel-title'>" +
 					"<a data-toggle='collapse' href='#" + panelId + "'>" + panelText + "</a>" +
