@@ -9,7 +9,7 @@
 	<script src="bootstrap-custom/js/bootstrap.min.js"></script>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body id="bootstrap-overrides">
+<body>
 
 <div class="container">
 	<h1>CC Tool</h1>
@@ -108,6 +108,7 @@ $("#submitButton").on("click", function(){
 	});
 });
 
+// generates html code with collapsibles based on the json and returns it
 function buildView(objJson)
 {
 	switch ($("#seltype").val())
@@ -121,7 +122,7 @@ function buildView(objJson)
 	}
 }
 
-// generates html code with collapsibles based on the json and returns it
+// generates html code with collapsibles based on sections in a Visa file
 function buildViewVisa(objJson)
 {
 	// HTML 01 - open a panel group for the view
@@ -129,14 +130,17 @@ function buildViewVisa(objJson)
 	
 	// HTML 02 - each section is shown in a collapsible panel
 	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Cardholders (" + Object.keys(objJson.Cardholders).length + ")", "panel-primary");
+	viewHTML += "<li class='list-group-item'><h4><em>" + objJson.CardholdersMeta + "</em></h4></li>";
 	viewHTML += buildViewSection(objJson.Cardholders, "Cardholders");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
 	viewHTML += GetCollapsibleHeaderPanelOpening("collapseAccounts", "Accounts (" + Object.keys(objJson.Accounts).length + ")", "panel-primary");
+	viewHTML += "<li class='list-group-item'><h4><em>" + objJson.AccountsMeta + "</em></h4></li>";
 	viewHTML += buildViewSection(objJson.Accounts, "Accounts");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
 	viewHTML += GetCollapsibleHeaderPanelOpening("collapseTransactions", "Transactions (" + Object.keys(objJson.Transactions).length + ")", "panel-primary");
+	viewHTML += "<li class='list-group-item'><h4><em>" + objJson.TransactionsMeta + "</em></h4></li>";
 	viewHTML += buildViewSection(objJson.Transactions, "Transactions");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
@@ -146,6 +150,7 @@ function buildViewVisa(objJson)
 	return viewHTML;
 }
 
+// generates html code with collapsibles based on sections in a Mastercard file
 function buildViewMastercard(objJson)
 {
 	// HTML 01 - open a panel group for the view
@@ -153,6 +158,7 @@ function buildViewMastercard(objJson)
 	
 	// HTML 02 - each section is shown in a collapsible panel
 	viewHTML += GetCollapsibleHeaderPanelOpening("collapseCardholders", "Accounts (" + Object.keys(objJson.Accounts).length + ")", "panel-primary");
+	viewHTML += "<li class='list-group-item'><h4><em>" + objJson.AccountsMeta + "</em></h4></li>";
 	viewHTML += buildViewSection(objJson.Accounts, "Accounts");
 	viewHTML += GetCollapsibleHeaderPanelClosing();
 	
@@ -162,7 +168,8 @@ function buildViewMastercard(objJson)
 	return viewHTML;
 }
 
-// generates html code with collapsibles for each section based on the json and returns it
+// generates html code for a section (i.e. a list of objects containing fields and optionally a Transactions section)
+// see expected JSON format below
 function buildViewSection(section, sectionName)
 {
 	var viewHTML = "";
@@ -179,7 +186,7 @@ function buildViewSection(section, sectionName)
 		$.each(section[item], function(itemName, itemValue){
 		
 			// add simple items
-			if (itemName != "Transactions" && itemName != "Collapsible Panel Text" && itemValue != "")
+			if (itemName != "Transactions" && itemName != "Collapsible Panel Text" && itemName != "TransactionsMeta" && itemValue != "")
 			{
 				itemViewHTML  += "<li class='list-group-item'><strong>" + itemName + "</strong>: <mark>" + itemValue +  "</mark></li>";
 			}
@@ -193,6 +200,7 @@ function buildViewSection(section, sectionName)
 				var panelId = "collapseTransactions" + itemCounter;
 				var panelText = "Transactions (" + Object.keys(itemValue).length + ")";
 				itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-primary");
+				itemViewHTML += "<li class='list-group-item'><h4><em>" + section[item]["TransactionsMeta"] + "</em></h4></li>";
 
 				var transactionCounter = 1;
 				for (var transaction in itemValue)
@@ -204,7 +212,7 @@ function buildViewSection(section, sectionName)
 
 					// insert transaction items into the collapsible area of each transaction header panel
 					$.each(itemValue[transaction], function(transactionItemName, transactionItemValue){
-						if (transactionItemName != "Transaction Panel Text" && transactionItemValue != "")
+						if (transactionItemName != "Collapsible Panel Text" && transactionItemValue != "")
 						{
 							itemViewHTML  += "<li class='list-group-item'><strong>" + transactionItemName + "</strong>: <mark>" + transactionItemValue +  "</mark></li>";
 						}
@@ -269,10 +277,13 @@ function GetCollapsibleHeaderPanelClosing()
 					...
 				},
 				... 
-			]
+			],
+			"TransactionsMeta": "meta_string"	<--- this string describes the format of collapsible panel texts
 		},
 		...
 	],
+	
+	"AccountsMeta": "meta_string",	<--- this string describes the format of collapsible panel texts
 	
 	***** BELOW FIELDS ONLY FOR VISA *****
 	
@@ -283,13 +294,18 @@ function GetCollapsibleHeaderPanelClosing()
 			...
 		}
 	],
+	
+	"CardholdersMeta": "meta_string",	<--- this string describes the format of collapsible panel texts
+	
 	"Transactions": [
 		{
 			"Collapsible Panel Text": "header text",
 			"Item1": "Item1Value",
 			...
 		}
-	]
+	],
+	
+	"TransactionsMeta": "meta_string",	<--- this string describes the format of collapsible panel texts
 }
 */
 </script>

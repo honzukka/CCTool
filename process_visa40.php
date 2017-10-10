@@ -27,7 +27,7 @@ function process_visa40($target_file_path)
 		if ($line_array[0] == "6")
 		{
 			// check if the file is indeed VISA 4.0
-			if (preg_match("/.*4\.0.*/", $line_array[7]) != 1)
+			if (trim($line_array[7], " ") != "4.0")
 			{
 				print error_response_json("Incorrect file format: Not VISA VCF 4.0");
 				exit_script($file_handler, $target_file_path);
@@ -56,8 +56,11 @@ function process_visa40($target_file_path)
 	$result_json_array = array(
 		"Error" => "",
 		"Accounts" => $accounts_json_array,
+		"AccountsMeta" => "ACCOUNT NUMBER\t(CARDHOLDER IDENTIFICATION)",
 		"Cardholders" => $cardholders_json_array,
-		"Transactions" => $transactions_json_array
+		"CardholdersMeta" => "NAME\t(CARDHOLDER IDENTIFICATION)",
+		"Transactions" => $transactions_json_array,
+		"TransactionsMeta" => "TRANSACTION REFERENCE NUMBER\t(ACCOUNT NUMBER)",
 	);
 	
 	$result_json = json_encode($result_json_array);
@@ -110,6 +113,7 @@ function process_cardholders($file_handler)
 	while (!feof($file_handler))
 	{
 		$line_array = get_split_line($file_handler);
+		trim_line_array($line_array);
 		
 		// exit block
 		if ($line_array[0] == "9")
@@ -145,6 +149,7 @@ function process_accounts($file_handler)
 	while (!feof($file_handler))
 	{
 		$line_array = get_split_line($file_handler);
+		trim_line_array($line_array);
 		
 		// exit block
 		if ($line_array[0] == "9")
@@ -152,7 +157,8 @@ function process_accounts($file_handler)
 			return $accounts_json_array;
 		}
 		
-		$panel_text = $line_array[2] . " (" . $line_array[1] . ")";
+		$obscured_account_number = "*" . substr($line_array[2], -4);
+		$panel_text = $obscured_account_number . " (" . $line_array[1] . ")";
 		
 		$account_json = array(
 			"Collapsible Panel Text" => $panel_text,
@@ -176,6 +182,7 @@ function process_transactions($file_handler)
 	while (!feof($file_handler))
 	{
 		$line_array = get_split_line($file_handler);
+		trim_line_array($line_array);
 		
 		// exit block
 		if ($line_array[0] == "9")
@@ -216,6 +223,20 @@ function get_split_line($file_handler)
 {
 	$line = fgets($file_handler);
 	return preg_split("/[\t]+/", $line);
+}
+
+// trims spaces in all parts of the line array and return the modified array
+// argument passed bvy reference!!!
+function trim_line_array(&$line_array)
+{
+	$array_count = count($line_array);
+	
+	for ($i = 0; $i < $array_count; $i++)
+	{
+		$line_array[$i] = trim($line_array[$i], " ");
+	}
+	
+	return $line_array;
 }
 
 function exit_script($file_handler, $target_file_path)

@@ -65,8 +65,11 @@ function process_mastercard($target_file_path)
 	$result_json_array = array(
 		"Error" => "",
 		"Accounts" => $accounts_json_array,
+		"AccountsMeta" => "NAME\t(ACCOUNT NUMBER)",
 		"Cardholders" => "",
-		"Transactions" => ""
+		"CardholdersMeta" => "",
+		"Transactions" => "",
+		"TransactionsMeta" => "PROCESSOR TRANSACTION ID\tPOSTING DATE"
 	);
 
 	$result_json = json_encode($result_json_array);
@@ -157,6 +160,8 @@ function GetAccountJson($account_entity)
 	}
 	
 	$account_json["Transactions"] = $transactions_json_array;
+	
+	$account_json["TransactionsMeta"] = "PROCESSOR TRANSACTION ID\t(POSTING DATE)";
 	
 	return $account_json;
 }
