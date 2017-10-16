@@ -2,7 +2,7 @@
 require_once "helper_functions.php";
 
 // loads the file, deletes it and processes its content
-function process_visa40($target_file_path)
+function process_visa($target_file_path)
 {
 	$file_handler = fopen($target_file_path, "r");
 	
@@ -26,10 +26,12 @@ function process_visa40($target_file_path)
 		// enter set
 		if ($line_array[0] == "6")
 		{
-			// check if the file is indeed VISA 4.0
-			if (trim($line_array[7], " ") != "4.0")
+			$format_type = trim($line_array[7], " ");
+			
+			// check if the file is indeed VISA 4.0 or VISA 4.4
+			if ($format_type != "4.0" && $format_type != "4.4")
 			{
-				print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+				print error_response_json("Incorrect file format: Not VISA VCF 4.0 or VISA VCF 4.4");
 				exit_script($file_handler, $target_file_path);
 			}
 			
@@ -222,7 +224,7 @@ function process_transactions($file_handler)
 function get_split_line($file_handler)
 {
 	$line = fgets($file_handler);
-	return preg_split("/[\t]+/", $line);
+	return preg_split("/\t/", $line, NULL);
 }
 
 // trims spaces in all parts of the line array and return the modified array

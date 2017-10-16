@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>CC Tool</title>
+	<title>CC Analyzer</title>
 	<meta charset="utf-8">
 	<link rel="stylesheet" href="bootstrap-custom/css/bootstrap.min.css">
 	<link rel="stylesheet" href="additional_styles.css">
@@ -12,7 +12,7 @@
 <body>
 
 <div class="container">
-	<h1>CC Tool</h1>
+	<h1>CC Analyzer</h1>
 	<br><br>
 	<form enctype="multipart/form-data" id="form">
 		
@@ -29,6 +29,7 @@
 					<select class="form-control" id="seltype" name="seltype">
 						<option value="mc">Mastercard CDF 3.0</option>
 						<option value="v40">VISA VCF 4.0</option>
+						<option value="v44">VISA VCF 4.4</option>
 					</select>
 				</div>
 				<div class="col-md-9 col-sm-8 col-xs-7"></div>
@@ -90,12 +91,24 @@ $("#submitButton").on("click", function(){
 			$("#submitButton").prop("disabled", false);
 			$("#response").show();
 			//$("#response").html(data);
-			//$("#response").html(JSON.stringify(data));
-			
-			var obj = JSON.parse(data);
-			if (obj.Error != "")
+
+			var obj;
+			try
 			{
-				$("#response").html(obj.Error);
+				obj = JSON.parse(data);
+				
+				if (obj.Error != "")
+				{
+					$("#response").html("Processing error:\n" + obj.Error);
+					return;
+				}
+			}
+			catch (err)
+			{
+				var output = "Invalid JSON received.\n" +
+								"Error message: " + err + "\n" +
+								"Data Received:\n" + data;
+				$("#response").html(output);
 				return;
 			}
 			
@@ -116,6 +129,8 @@ function buildView(objJson)
 		case "mc":
 			return buildViewMastercard(objJson);
 		case "v40":
+			return buildViewVisa(objJson);
+		case "v44":
 			return buildViewVisa(objJson);
 		default:
 			return "error";
