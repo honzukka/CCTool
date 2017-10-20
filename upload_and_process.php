@@ -2,6 +2,7 @@
 // require code necessary to process different card formats
 require_once "process_mastercard.php";
 require_once "process_visa.php";
+require_once "process_amex.php";
 require_once "helper_functions.php";
 
 // this supresses warning messages (unlink prints warning messages so an "invalid json" is sent to the html page)
@@ -28,6 +29,10 @@ if ($_POST["seltype"] == "mc")
 else if ($_POST["seltype"] == "v40" || $_POST["seltype"] == "v44")
 {
 	$response_json = process_visa($target_file_path);
+}
+else if ($_POST["seltype"] == "amexGL1025")
+{
+	$response_json = process_amex($target_file_path);
 }
 
 // OUTPUT
