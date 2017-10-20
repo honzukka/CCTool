@@ -30,9 +30,9 @@ else if ($_POST["seltype"] == "v40" || $_POST["seltype"] == "v44")
 {
 	$response_json = process_visa($target_file_path);
 }
-else if ($_POST["seltype"] == "amexGL1025")
+else if ($_POST["seltype"] == "amexGL1025" || $_POST["seltype"] == "amexGL1205")
 {
-	$response_json = process_amex($target_file_path);
+	$response_json = process_amex($target_file_path, $_POST["seltype"]);
 }
 
 // OUTPUT

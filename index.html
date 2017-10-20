@@ -31,6 +31,7 @@
 						<option value="v40">VISA VCF 4.0</option>
 						<option value="v44">VISA VCF 4.4</option>
 						<option value="amexGL1025">Amex GL1025</option>
+						<option value="amexGL1205">Amex GL1205</option>
 					</select>
 				</div>
 				<div class="col-md-9 col-sm-8 col-xs-7"></div>
@@ -135,6 +136,8 @@ function buildView(objJson)
 			return buildViewVisa(objJson);
 		case "amexGL1025":
 			return buildViewAmexGL1025(objJson);
+		case "amexGL1205":
+			return buildViewMastercard(objJson);
 		default:
 			return "error";
 	}
@@ -299,6 +302,7 @@ function GetCollapsibleHeaderPanelClosing()
 Mastercard:		Error, Accounts
 Visa:			Error, Accounts, Cardholders, Transactions
 Amex GL1025:	Error, Transactions
+Amex GL1205:	Error, Accounts
 
 {
 	"Error": "error_message",   <--- error_message is empty if no error has occured

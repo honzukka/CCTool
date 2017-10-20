@@ -2,7 +2,7 @@
 require_once "helper_functions.php";
 
 // loads the file, deletes it and processes its content
-function process_amex($target_file_path)
+function process_amex($target_file_path, $file_type)
 {
 	$file_handler = fopen($target_file_path, "r");
 	
@@ -13,17 +13,47 @@ function process_amex($target_file_path)
 	}
 	
 	$transactions_json_array = array();
+	$accounts_json_array = array();
+	
+	$actual_file_type = "";
 	
 	// read the file line by line
 	while (!feof($file_handler))
 	{
 		$line = fgets($file_handler);
 		
-		// if the record is type 1
-		if ($line[0] == "1")
+		// if the record is type 0 - header
+		if ($line[0] == "0")
 		{
-			$transaction_json = get_transaction($line);
-			array_push($transactions_json_array, $transaction_json);
+			// read the file type
+			$actual_file_type = "amex" . trim(substr($line, 27, 7), " ");
+			
+			// check the file type
+			if ($file_type != $actual_file_type)
+			{
+				print error_response_json("Wrong file type.");
+				exit_script($file_handler, $target_file_path);
+			}
+		}
+		
+		switch ($file_type)
+		{
+			case "amexGL1025":
+				// if the record is type 1
+				if ($line[0] == "1")
+				{
+					$transaction_json = get_transaction1025($line);
+					array_push($transactions_json_array, $transaction_json);
+				}
+				break;
+			case "amexGL1205":
+				// if the record is type 1
+				if ($line[0] == "1")
+				{
+					$account_json = get_account1205($line);
+					array_push($accounts_json_array, $account_json);
+				}
+				break;
 		}
 	}
 	
@@ -38,6 +68,8 @@ function process_amex($target_file_path)
 	
 	$result_json_array = array(
 		"Error" => "",
+		"Accounts" => $accounts_json_array,
+		"AccountsMeta" => "NAME\t(ACCOUNT NUMBER)",
 		"Transactions" => $transactions_json_array,
 		"TransactionsMeta" => "TRANSACTION ID\t(ACCOUNT NUMBER)"
 	);
@@ -47,9 +79,9 @@ function process_amex($target_file_path)
 	return $result_json;
 }
 
-function get_transaction($line)
+function get_transaction1025($line)
 {
-	$panel_text = trim(substr($line, 631, 50), " ") . " (" . trim(substr($line, 207, 20), " ") . ")";
+	$panel_text = trim(substr($line, 631, 50), " ") . " (" . trim(substr($line, 207, 20)) . ")";
 	
 	$transaction_json = array(
 		"Collapsible Panel Text" => $panel_text,
@@ -79,6 +111,31 @@ function get_transaction($line)
 	);
 	
 	return $transaction_json;
+}
+
+function get_account1205($line)
+{
+	$panel_text = trim(substr($line, 158, 20), " ") . " " . trim(substr($line, 128, 30), " ") . " (" . trim(substr($line, 108, 20)) . ")";
+	
+	$account_json = array(
+		"Collapsible Panel Text" => $panel_text,
+		"Expire Date" => trim(substr($line, 732, 8), " "),
+		"Employee ID" => trim(substr($line, 211, 15), " "),
+		"Cardmember First Name" => trim(substr($line, 158, 20), " "),
+		"Cardmember Middle Name" => trim(substr($line, 178, 20), " "),
+		"Cardmember Last Name" => trim(substr($line, 128, 30), " "),
+		"Address 1" => trim(substr($line, 429, 40), " "),
+		"Address 2" => trim(substr($line, 469, 40), " "),
+		"Address 3" => trim(substr($line, 509, 40), " "),
+		"Address 4" => trim(substr($line, 549, 40), " "),
+		"Address 5" => trim(substr($line, 589, 40), " "),
+		"City" => trim(substr($line, 629, 35), " "),
+		"State" => trim(substr($line, 664, 6), " "),
+		"Postal Code" => trim(substr($line, 670, 15), " "),
+		"Country Code" => trim(substr($line, 685, 3), " ")
+	);
+	
+	return $account_json;
 }
 
 ?>
