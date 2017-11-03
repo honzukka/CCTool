@@ -94,8 +94,8 @@ $("#submitButton").on("click", function(){
 		success: function(data){
 			$("#submitButton").prop("disabled", false);
 			$("#response").show();
-			$("#response").html(data);
-/*
+			//$("#response").html(data);
+
 			var obj;
 			try
 			{
@@ -121,7 +121,6 @@ $("#submitButton").on("click", function(){
 			
 			// show the view
 			$("#response").html(view);
-*/
 		}
 	});
 });
