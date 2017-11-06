@@ -98,7 +98,8 @@ function process_amex($target_file_path, $file_type)
 				// extract the transaction information from the relevant records (type 1)
 				if ($line[0] == "1")
 				{
-					$transaction_json = get_transaction1080($line);
+					// the file handler needs to be passed because the function reads "nested" records
+					$transaction_json = get_transaction1080($line, $file_handler);
 					array_push($transactions_json_array, $transaction_json);
 				}
 			}
@@ -205,7 +206,7 @@ function get_transactionTKMD($line)
 	return $transaction_json;
 }
 
-function get_transaction1080($line)
+function get_transaction1080($line, $file_handler)
 {
 	$panel_text = trim(substr($line, 16, 50), " ") . " (" . trim(substr($line, 306, 20), " ") . ")";
 	
