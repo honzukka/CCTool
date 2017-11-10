@@ -15,6 +15,9 @@ function process_amex($target_file_path, $file_type)
 	$transactions_json_array = array();
 	$accounts_json_array = array();
 	
+	$transactions_meta_string = "TRANSACTION ID\t(ACCOUNT NUMBER)";
+	$accounts_meta_string = "NAME\t(ACCOUNT NUMBER)";
+	
 	$actual_file_type = "";
 	
 	switch ($file_type)
@@ -42,7 +45,7 @@ function process_amex($target_file_path, $file_type)
 				// extract the transaction information from the relevant records (type 1)
 				if ($line[0] == "1")
 				{
-					$transaction_json = get_transaction1025($line);
+					$transaction_json = get_transaction1025($line, $transactions_meta_string);
 					array_push($transactions_json_array, $transaction_json);
 				}
 			}
@@ -70,7 +73,7 @@ function process_amex($target_file_path, $file_type)
 				// extract the transaction information from the relevant records (type 1)
 				if ($line[0] == "1")
 				{
-					$account_json = get_account1205($line);
+					$account_json = get_account1205($line, $accounts_meta_string);
 					array_push($accounts_json_array, $account_json);
 				}
 			}
@@ -84,7 +87,7 @@ function process_amex($target_file_path, $file_type)
 				// extract the transaction information from the relevant records (type F)
 				if ($line[15] == "F")
 				{
-					$transaction_json = get_transactionTKMD($line);
+					$transaction_json = get_transactionTKMD($line, $transactions_meta_string);
 					array_push($transactions_json_array, $transaction_json);
 				}
 			}
@@ -99,7 +102,7 @@ function process_amex($target_file_path, $file_type)
 				if ($line[0] == "1")
 				{
 					// the file handler needs to be passed because the function reads "nested" records
-					$transaction_json = get_transaction1080($line, $file_handler);
+					$transaction_json = get_transaction1080($line, $file_handler, $transactions_meta_string);
 					array_push($transactions_json_array, $transaction_json);
 				}
 			}
@@ -118,9 +121,9 @@ function process_amex($target_file_path, $file_type)
 	$result_json_array = array(
 		"Error" => "",
 		"Accounts" => $accounts_json_array,
-		"AccountsMeta" => "NAME\t(ACCOUNT NUMBER)",
+		"AccountsMeta" => $accounts_meta_string,
 		"Transactions" => $transactions_json_array,
-		"TransactionsMeta" => "TRANSACTION ID\t(ACCOUNT NUMBER)"
+		"TransactionsMeta" => $transactions_meta_string
 	);
 	
 	$result_json = json_encode($result_json_array);
@@ -128,9 +131,10 @@ function process_amex($target_file_path, $file_type)
 	return $result_json;
 }
 
-function get_transaction1025($line)
+function get_transaction1025($line, &$meta_string)
 {
 	$panel_text = trim(substr($line, 631, 50), " ") . " (" . trim(substr($line, 207, 20)) . ")";
+	$meta_string = "TRANSACTION ID\t(ACCOUNT NUMBER)";
 	
 	$transaction_json = array(
 		"Collapsible Panel Text" => $panel_text,
@@ -162,9 +166,10 @@ function get_transaction1025($line)
 	return $transaction_json;
 }
 
-function get_account1205($line)
+function get_account1205($line, &$meta_string)
 {
 	$panel_text = trim(substr($line, 158, 20), " ") . " " . trim(substr($line, 128, 30), " ") . " (" . trim(substr($line, 108, 20)) . ")";
+	$meta_string = "CARDMEMBER NAME\t(CARDMEMBER NUMBER)";
 	
 	$account_json = array(
 		"Collapsible Panel Text" => $panel_text,
@@ -187,9 +192,10 @@ function get_account1205($line)
 	return $account_json;
 }
 
-function get_transactionTKMD($line)
+function get_transactionTKMD($line, &$meta_string)
 {
 	$panel_text = trim(substr($line, 17, 15), " ") . " (" . trim(substr($line, 0, 15), " ") . ")";
+	$meta_string = "RECORD TYPE REFERENCE\t(BUSINESS TRAVEL ACCOUNT NUMBER)";
 	
 	$transaction_json = array(
 		"Collapsible Panel Text" => $panel_text,
@@ -206,15 +212,16 @@ function get_transactionTKMD($line)
 	return $transaction_json;
 }
 
-function get_transaction1080($line, $file_handler)
+function get_transaction1080($line, $file_handler, &$meta_string)
 {
 	$panel_text = trim(substr($line, 16, 50), " ") . " (" . trim(substr($line, 306, 20), " ") . ")";
+	$meta_string = "CHARGE TRANSACTION ID\t(BILLING ACCOUNT NUMBER)";
 	
 	$transaction_json = array(
 		"Collapsible Panel Text" => $panel_text,
 		"Folio Record ID" => trim(substr($line, 1, 15), " "),
-		"Charge Transaction ID" => trim(substr($line, 16, 50), " "),
-		"Charge Transaction Number" => trim(substr($line, 66, 37), " "),
+		"Charge Transaction ID (links to GL1025 or GL1026)" => trim(substr($line, 16, 50), " "),
+		"Charge Transaction Number (links to KR1025)" => trim(substr($line, 66, 37), " "),
 		"Requesting Control Account Number" => trim(substr($line, 143, 19), " "),
 		"Requesting Control Account Name" => trim(substr($line, 162, 40), " "),
 		"Billing Basic Control Account Number" => trim(substr($line, 202, 19), " "),
@@ -270,8 +277,8 @@ function get_transaction1080($line, $file_handler)
 			$line_item_json = array(
 				"Collapsible Panel Text" => $panel_text,
 				"Folio Record ID" => trim(substr($line, 1, 15), " "),
-				"Charge Transaction ID" => trim(substr($line, 16, 50), " "),
-				"Charge Transaction Number" => trim(substr($line, 66, 37), " "),
+				"Charge Transaction ID (links to GL1025 or GL1026)" => trim(substr($line, 16, 50), " "),
+				"Charge Transaction Number (links to KR1025)" => trim(substr($line, 66, 37), " "),
 				"Item Code" => trim(substr($line, 111, 6), " "),
 				"Item Code Description" => trim(substr($line, 117, 40), " "),
 				"Item Amount" => trim(substr($line, 278, 15), " ")
