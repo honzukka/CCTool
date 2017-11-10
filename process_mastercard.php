@@ -161,7 +161,7 @@ function GetAccountJson($account_entity)
 	
 	$account_json["Transactions"] = $transactions_json_array;
 	
-	$account_json["TransactionsMeta"] = "PROCESSOR TRANSACTION ID\t(POSTING DATE)";
+	$account_json["NestedMeta"] = "PROCESSOR TRANSACTION ID\t(POSTING DATE)";
 	
 	return $account_json;
 }

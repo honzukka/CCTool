@@ -231,41 +231,43 @@ function buildViewSection(section, sectionName)
 		$.each(section[item], function(itemName, itemValue){
 		
 			// add simple items
-			if (itemName != "Transactions" && itemName != "Collapsible Panel Text" && itemName != "TransactionsMeta" && itemValue != "")
+			if (itemName != "Transactions" && itemName != "Line Items" &&
+				itemName != "NestedMeta" &&
+				itemName != "Collapsible Panel Text" && itemValue != "")
 			{
 				itemViewHTML  += "<li class='list-group-item'><strong>" + itemName + "</strong>: <mark>" + itemValue +  "</mark></li>";
 			}
-			// transactions have another collapsible header panel
-			else if (itemName == "Transactions")
+			// nested items have another collapsible header panel
+			else if (itemName == "Transactions" || itemName == "Line Items")
 			{
 				// HTML 04
 				itemViewHTML  += "<li class='list-group-item'>";
 				
-				// HTML 05 - open the collapsible header panel for transactions
-				var panelId = "collapseTransactions" + itemCounter;
-				var panelText = "Transactions (" + Object.keys(itemValue).length + ")";
+				// HTML 05 - open the collapsible header panel for nested items
+				var panelId = "nestedCollapse" + itemCounter;
+				var panelText = itemName + " (" + Object.keys(itemValue).length + ")";
 				itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-primary");
-				itemViewHTML += "<li class='list-group-item'><h4><em>" + section[item]["TransactionsMeta"] + "</em></h4></li>";
+				itemViewHTML += "<li class='list-group-item'><h4><em>" + section[item]["NestedMeta"] + "</em></h4></li>";
 
-				var transactionCounter = 1;
-				for (var transaction in itemValue)
+				var nestedItemCounter = 1;
+				for (var nestedItem in itemValue)
 				{
-					// HTML 06 - each transaction has another collapsible panel header
-					var panelId = "collapseTransaction" + itemCounter + "-" + transactionCounter;
-					var panelText = itemValue[transaction]["Collapsible Panel Text"];
+					// HTML 06 - each nested item has another collapsible panel header
+					var panelId = "nestedCollapse" + itemCounter + "-" + nestedItemCounter;
+					var panelText = itemValue[nestedItem]["Collapsible Panel Text"];
 					itemViewHTML  += GetCollapsibleHeaderPanelOpening(panelId, panelText, "panel-default");
 
-					// insert transaction items into the collapsible area of each transaction header panel
-					$.each(itemValue[transaction], function(transactionItemName, transactionItemValue){
-						if (transactionItemName != "Collapsible Panel Text" && transactionItemValue != "")
+					// insert nested items into the collapsible area of each nested item header panel
+					$.each(itemValue[nestedItem], function(nestedItemName, nestedItemValue){
+						if (nestedItemName != "Collapsible Panel Text" && nestedItemValue != "")
 						{
-							itemViewHTML  += "<li class='list-group-item'><strong>" + transactionItemName + "</strong>: <mark>" + transactionItemValue +  "</mark></li>";
+							itemViewHTML  += "<li class='list-group-item'><strong>" + nestedItemName + "</strong>: <mark>" + nestedItemValue +  "</mark></li>";
 						}
 					});
 					
-					// HTML 06 - close the collapsible header panel for each transaction
+					// HTML 06 - close the collapsible header panel for each nested item
 					itemViewHTML  += GetCollapsibleHeaderPanelClosing();
-					transactionCounter++;
+					nestedItemCounter++;
 				}
 				
 				// HTML 05 - close the transactions header panel
@@ -330,7 +332,7 @@ Amex GL1080:	Error, Transactions(+Line Items)
 				},
 				... 
 			],
-			"TransactionsMeta": "meta_string"	<--- this string describes the format of collapsible panel texts
+			"NestedMeta": "meta_string"	<--- this string describes the format of collapsible panel texts
 		},
 		...
 	],
@@ -361,7 +363,7 @@ Amex GL1080:	Error, Transactions(+Line Items)
 				},
 				...
 			],
-			"LineItemsMeta": "meta_string"	<--- this string describes the format of collapsible panel texts
+			"NestedMeta": "meta_string"	<--- this string describes the format of collapsible panel texts
 		}
 	],
 	"TransactionsMeta": "meta_string",	<--- this string describes the format of collapsible panel texts

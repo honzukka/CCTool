@@ -265,7 +265,7 @@ function get_transaction1080($line, $file_handler)
 		// if we read a type-2 record
 		if ($line[0] == "2")
 		{
-			$panel_text = trim(substr($line, 222, 40), " ") . " (" . trim(substr($line, 199, 15), " ") . ")";
+			$panel_text = trim(substr($line, 222, 40), " ");
 			
 			$line_item_json = array(
 				"Collapsible Panel Text" => $panel_text,
@@ -283,7 +283,7 @@ function get_transaction1080($line, $file_handler)
 	
 	$transaction_json["Line Items"] = $line_items_json;
 	
-	$transaction_json["LineItemsMeta"] = "ITEM DESCRIPTION\t(ITEM REFERENCE NUMBER)";
+	$transaction_json["NestedMeta"] = "ITEM DESCRIPTION";
 	
 	return $transaction_json;
 }
