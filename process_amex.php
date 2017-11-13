@@ -121,6 +121,20 @@ function process_amex($target_file_path, $file_type)
 				}
 			}
 			break;
+		case "amexKR1205":
+			// read the file line by line
+			while (!feof($file_handler))
+			{
+				$line = fgets($file_handler);
+				
+				// if the record contains accounts
+				if ($line[0] == "2")
+				{
+					$account_json = get_accountKR1205($line, $accounts_meta_string);
+					array_push($accounts_json_array, $account_json);
+				}
+			}
+			break;
 	}
 
 	fclose($file_handler);
@@ -384,6 +398,33 @@ function get_accountKR1025_internal($line, &$meta_string)
 		"Cardmember Embossed Name" => trim(substr($line, 125, 25))
 	);
 		
+	return $account_json;
+}
+
+function get_accountKR1205($line, &$meta_string)
+{
+	$panel_text = trim(substr($line, 77, 25)) . " (" . trim(substr($line, 62, 15)) . ")";
+	$meta_string = "CARDMEMBER NAME\t(CARDMEMBER NUMBER)";
+	
+	$account_json = array(
+		"Collapsible Panel Text" => $panel_text,
+		"Request Control Account" => trim(substr($line, 7, 15)),
+		"Basic Control Account" => trim(substr($line, 22, 15)),
+		"Basic Control Account Name" => trim(substr($line, 37, 25)),
+		"Cardmember Number" => trim(substr($line, 62, 15)),
+		"Cardmember Name" => trim(substr($line, 77, 25)),
+		"Cost Centre" => trim(substr($line, 102, 10)),
+		"Employee Identifier" => trim(substr($line, 112, 10)),
+		"Company Name" => trim(substr($line, 181, 20)),
+		"Address" => trim(substr($line, 201, 25)),
+		"City" => trim(substr($line, 226, 18)),
+		"State" => trim(substr($line, 244, 2)),
+		"Zip" => trim(substr($line, 246, 9)),
+		"Country Code/State Code" => trim(substr($line, 256, 3)),
+		"Expire Year" => trim(substr($line, 290, 8)),
+		"Current Balance" => trim(substr($line, 298, 11))
+	);
+	
 	return $account_json;
 }
 

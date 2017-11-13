@@ -32,7 +32,7 @@ else if ($_POST["seltype"] == "v40" || $_POST["seltype"] == "v44")
 }
 else if ($_POST["seltype"] == "amexGL1025" || $_POST["seltype"] == "amexGL1205" || 
 		$_POST["seltype"] == "amexTMKD" || $_POST["seltype"] == "amexGL1080" ||
-		$_POST["seltype"] == "amexKR1025")
+		$_POST["seltype"] == "amexKR1025" || $_POST["seltype"] == "amexKR1205")
 {
 	$response_json = process_amex($target_file_path, $_POST["seltype"]);
 }

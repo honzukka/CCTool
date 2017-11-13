@@ -19,7 +19,8 @@ function buildView(objJson)
 			return buildViewAmexGL1025(objJson);
 		case "amexKR1025":
 			return buildViewMastercard(objJson);
-			return 
+		case "amexKR1205":
+			return buildViewMastercard(objJson);
 		default:
 			return "error";
 	}
@@ -190,6 +191,7 @@ Amex GL1205:	Error, Accounts
 Amex TMKD:		Error, Transactions
 Amex GL1080:	Error, Transactions(+Line Items)
 Amex KR1025:	Error, Accounts(+Transactions)
+Amex KR1205:	Error, Accounts
 
 {
 	"Error": "error_message",   <--- error_message is empty if no error has occured
@@ -199,7 +201,7 @@ Amex KR1025:	Error, Accounts(+Transactions)
 			"Item1": "Item1Value",
 			...,
 			
-			***** NESTED TRANSACTIONS ONLY FOR MASTERCARD *****
+			***** NESTED TRANSACTIONS ONLY FOR MASTERCARD AND KR1025 *****
 			
 			"Transactions": [ 
 				{ 
