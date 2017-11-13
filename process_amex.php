@@ -8,7 +8,7 @@ function process_amex($target_file_path, $file_type)
 	
 	if ($file_handler === FALSE)
 	{
-		print error_response_json("There was an error loading the file. Please contact the server administrator about this.");
+		print error_response_json("There was an error reading the file. Please contact the server administrator about this.");
 		exit;
 	}
 	
@@ -104,6 +104,20 @@ function process_amex($target_file_path, $file_type)
 					// the file handler needs to be passed because the function reads "nested" records
 					$transaction_json = get_transaction1080($line, $file_handler, $transactions_meta_string);
 					array_push($transactions_json_array, $transaction_json);
+				}
+			}
+			break;
+		case "amexKR1025":
+			// read the file line by line
+			while (!feof($file_handler))
+			{
+				$line = fgets($file_handler);
+				
+				// if the record is either an account without transactions or a transaction
+				if ($line[0] == "1" || $line[0] == "2")
+				{
+					$account_json = get_accountKR1025($line, $file_handler, $accounts_meta_string);
+					array_push($accounts_json_array, $account_json);
 				}
 			}
 			break;
@@ -289,10 +303,88 @@ function get_transaction1080($line, $file_handler, &$meta_string)
 	}
 	
 	$transaction_json["Line Items"] = $line_items_json;
-	
 	$transaction_json["NestedMeta"] = "ITEM DESCRIPTION";
 	
 	return $transaction_json;
+}
+
+function get_accountKR1025($line, $file_handler, &$meta_string)
+{
+	// account without transactions - just extract it and return
+	if ($line[0] == "2")
+	{
+		return get_accountKR1025_internal($line, $meta_string);
+	}
+	
+	// keep extracting transactions until an account is found (then return)
+	if ($line[0] == "1")
+	{
+		$transactions_json_array = array();
+
+		// extract all the transactions
+		do
+		{
+			$panel_text = trim(substr($line, 374, 15)) . " (" . trim(substr($line, 389, 8)) . ")";
+			
+			$transaction_json = array(
+				"Collapsible Panel Text" => $panel_text,
+				"Requesting Control Account Number" => trim(substr($line, 1, 19)),
+				"Billing Basic Control Account Number" => trim(substr($line, 55, 19)),
+				"Cardmember Embossed Name" => trim(substr($line, 132, 26)),
+				"Employee ID" => trim(substr($line, 158, 10)),
+				"Cost Center" => trim(substr($line, 168, 10)),
+				"Corporate Identifier Number" => trim(substr($line, 214, 19)),
+				"Supplier Reference Number" => trim(substr($line, 233, 11)),
+				"Billed Amount" => trim(substr($line, 245, 15)),
+				"Billed Tax Amount" => trim(substr($line, 260, 15)),
+				"Billed Currency Code" => trim(substr($line, 275, 3)),
+				"Local Charge Amount" => trim(substr($line, 279, 15)),
+				"Local Tax Amount" => trim(substr($line, 294, 15)),
+				"Local Currency Code" => trim(substr($line, 309, 3)),
+				"Currency Exchange Rate" => trim(substr($line, 313, 15)),
+				"Transaction Number" => trim(substr($line, 374, 15)),
+				"Charge Date" => trim(substr($line, 389, 8)),
+				"Business Process Date" => trim(substr($line, 397, 8)),
+				"Bill Date" => trim(substr($line, 405, 8)),
+				"SE Name 1" => trim(substr($line, 839, 40)),
+				"SE Name 2" => trim(substr($line, 879, 40)),
+				"SE City" => trim(substr($line, 999, 40)),
+				"SE State" => trim(substr($line, 1039, 6)),
+				"SE Zip Code" => trim(substr($line, 1045, 15)),
+				"SE Country Name" => trim(substr($line, 1060, 35)),
+				"SE Country Code" => trim(substr($line, 1095, 3))
+			);
+			
+			array_push($transactions_json_array, $transaction_json);
+			
+			$line = fgets($file_handler);
+		}
+		while ($line[0] == "1");
+			
+		// now process the account and add the transactions to it
+		$account_json = get_accountKR1025_internal($line, $meta_string);
+		
+		$account_json["Transactions"] = $transactions_json_array;
+		$account_json["NestedMeta"] = "TRANSACTION NUMBER\t(CHARGE DATE)";
+		
+		return $account_json;
+	}
+}
+
+function get_accountKR1025_internal($line, &$meta_string)
+{
+	$panel_text = trim(substr($line, 125, 25)) . " (" . trim(substr($line, 20, 19)) . ")";
+	$meta_string = "CARDMEMBER EMBOSSED NAME\t(CARDMEMBER ACCOUNT NUMBER)";
+		
+	$account_json = array(
+		"Collapsible Panel Text" => $panel_text,
+		"Basic Control Account Number" => trim(substr($line, 1, 19)),
+		"Cardmember Account Number" => trim(substr($line, 20, 19)),
+		"Cardmember Balance" => trim(substr($line, 90, 15)),
+		"Cardmember Embossed Name" => trim(substr($line, 125, 25))
+	);
+		
+	return $account_json;
 }
 
 ?>

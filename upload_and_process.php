@@ -15,7 +15,7 @@ $target_file_path = $target_dir . basename( $_FILES["fileUpload"]["name"]);
 
 if (!move_uploaded_file($_FILES["fileUpload"]["tmp_name"], $target_file_path)) 
 {
-	print error_response_json("There was an error uploading your file.");
+	print error_response_json("There was an error uploading the file.");
 	exit;
 }
 
@@ -31,7 +31,8 @@ else if ($_POST["seltype"] == "v40" || $_POST["seltype"] == "v44")
 	$response_json = process_visa($target_file_path);
 }
 else if ($_POST["seltype"] == "amexGL1025" || $_POST["seltype"] == "amexGL1205" || 
-		$_POST["seltype"] == "amexTMKD" || $_POST["seltype"] == "amexGL1080")
+		$_POST["seltype"] == "amexTMKD" || $_POST["seltype"] == "amexGL1080" ||
+		$_POST["seltype"] == "amexKR1025")
 {
 	$response_json = process_amex($target_file_path, $_POST["seltype"]);
 }

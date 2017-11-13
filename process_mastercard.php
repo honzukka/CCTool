@@ -10,7 +10,7 @@ function process_mastercard($target_file_path)
 	
 	if ($feed_file === FALSE)
 	{
-		print error_response_json("There was an error loading the file. Please contact the server administrator about this.");
+		print error_response_json("There was an error reading the file. Please contact the server administrator about this.");
 		exit;
 	}
 

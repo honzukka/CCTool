@@ -8,7 +8,7 @@ function process_visa($target_file_path)
 	
 	if ($file_handler === FALSE)
 	{
-		print error_response_json("There was an error loading the file. Please contact the server administrator about this.");
+		print error_response_json("There was an error reading the file. Please contact the server administrator about this.");
 		exit;
 	}
 	
@@ -103,7 +103,7 @@ function process_set($file_handler, &$cardholders_json_array, &$accounts_json_ar
 		}
 	}
 	
-	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	print error_response_json("Incorrect file format: Not VISA VCF 4.X");
 	exit;
 }
 
@@ -139,7 +139,7 @@ function process_cardholders($file_handler)
 		array_push($cardholders_json_array, $cardholder_json);
 	}
 	
-	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	print error_response_json("Incorrect file format: Not VISA VCF 4.X");
 	exit_script($file_handler, $target_file_path);
 }
 
@@ -172,7 +172,7 @@ function process_accounts($file_handler)
 		array_push($accounts_json_array, $account_json);
 	}
 	
-	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	print error_response_json("Incorrect file format: Not VISA VCF 4.X");
 	exit_script($file_handler, $target_file_path);
 }
 
@@ -217,7 +217,7 @@ function process_transactions($file_handler)
 		array_push($transactions_json_array, $transaction_json);
 	}
 	
-	print error_response_json("Incorrect file format: Not VISA VCF 4.0");
+	print error_response_json("Incorrect file format: Not VISA VCF 4.X");
 	exit_script($file_handler, $target_file_path);
 }
 
