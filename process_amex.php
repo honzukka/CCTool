@@ -98,6 +98,20 @@ function process_amex($target_file_path, $file_type)
 			{
 				$line = fgets($file_handler);
 				
+				// if the record is type 0 - header
+				if ($line[0] == "0")
+				{
+					// read the file type
+					$actual_file_type = "amex" . trim(substr($line, 27, 7), " ");
+					
+					// check the file type
+					if ($file_type != $actual_file_type)
+					{
+						print error_response_json("Wrong file type.");
+						exit_script($file_handler, $target_file_path);
+					}
+				}
+				
 				// extract the transaction information from the relevant records (type 1)
 				if ($line[0] == "1")
 				{
@@ -112,6 +126,20 @@ function process_amex($target_file_path, $file_type)
 			while (!feof($file_handler))
 			{
 				$line = fgets($file_handler);
+				
+				// if the record is type 0 - header
+				if ($line[0] == "0")
+				{	
+					// read the file type
+					$actual_file_type = "amex" . trim(substr($line, 22, 2), " ") . trim(substr($line, 25, 4), " ");
+					
+					// check the file type
+					if ($file_type != $actual_file_type)
+					{
+						print error_response_json("Wrong file type.");
+						exit_script($file_handler, $target_file_path);
+					}
+				}
 				
 				// if the record is either an account without transactions or a transaction
 				if ($line[0] == "1" || $line[0] == "2")
@@ -426,6 +454,11 @@ function get_accountKR1205($line, &$meta_string)
 	);
 	
 	return $account_json;
+}
+
+function check_file_type_and_exit($line, $position, $length, $file_type, $file_handler, $target_file_path)
+{
+	
 }
 
 ?>
