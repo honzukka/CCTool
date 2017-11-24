@@ -110,7 +110,7 @@ function buildViewSection(section, sectionName)
 			// add simple items
 			if (itemName != "Transactions" && itemName != "Line Items" &&
 				itemName != "NestedMeta" &&
-				itemName != "Collapsible Panel Text" && itemValue != "")
+				itemName != "Collapsible Panel Text")
 			{
 				itemViewHTML  += "<li class='list-group-item'><strong>" + itemName + "</strong>: <mark>" + itemValue +  "</mark></li>";
 			}
@@ -136,7 +136,7 @@ function buildViewSection(section, sectionName)
 
 					// insert nested items into the collapsible area of each nested item header panel
 					$.each(itemValue[nestedItem], function(nestedItemName, nestedItemValue){
-						if (nestedItemName != "Collapsible Panel Text" && nestedItemValue != "")
+						if (nestedItemName != "Collapsible Panel Text")
 						{
 							itemViewHTML  += "<li class='list-group-item'><strong>" + nestedItemName + "</strong>: <mark>" + nestedItemValue +  "</mark></li>";
 						}

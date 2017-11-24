@@ -456,9 +456,4 @@ function get_accountKR1205($line, &$meta_string)
 	return $account_json;
 }
 
-function check_file_type_and_exit($line, $position, $length, $file_type, $file_handler, $target_file_path)
-{
-	
-}
-
 ?>
