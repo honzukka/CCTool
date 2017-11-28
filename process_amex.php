@@ -262,7 +262,14 @@ function get_transactionTKMD($line, &$meta_string)
 		"Destination of Travel/General Description" => trim(substr($line, 151, 24), " "),
 		"Billing Amount" => trim(substr($line, 225, 15), " "),
 		"VAT Amount where Captured/Received" => trim(substr($line, 303, 15), " "),
-		"Charge Receipt Date" => trim(substr($line, 341, 8), " ")
+		"Charge Receipt Date" => trim(substr($line, 341, 8), " "),
+		"REF. 1" => trim(substr($line, 175, 9), " "),
+		"REF. 2" => trim(substr($line, 184, 24), " "),
+		"REF. 3" => trim(substr($line, 349, 10), " "),
+		"REF. 4" => trim(substr($line, 359, 10), " "),
+		"REF. 5" => trim(substr($line, 470, 15), " "),
+		"REF. 6" => trim(substr($line, 485, 5), " "),
+		"REF. 7" => trim(substr($line, 490, 10), " ")
 	);
 	
 	return $transaction_json;

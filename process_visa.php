@@ -159,8 +159,8 @@ function process_accounts($file_handler)
 			return $accounts_json_array;
 		}
 		
-		$obscured_account_number = "*" . substr($line_array[2], -4);
-		$panel_text = $obscured_account_number . " (" . $line_array[1] . ")";
+		//$obscured_account_number = "*" . substr($line_array[2], -4);
+		$panel_text = $line_array[2] . " (" . $line_array[1] . ")";
 		
 		$account_json = array(
 			"Collapsible Panel Text" => $panel_text,

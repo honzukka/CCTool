@@ -84,8 +84,8 @@ function GetAccountJson($account_entity)
 	$hierarchy_addr = $account_entity->HierarchyAddress_4410;
 		
 	// prepare a string that will be shown in the header panel
-	$obscured_account_number = " (*" . substr((string)($account_entity->attributes()->AccountNumber), -4) . ")";
-	$account_panel_text = (string)($account_info->NameLine1) . $obscured_account_number;
+	//$obscured_account_number = " (*" . substr((string)($account_entity->attributes()->AccountNumber), -4) . ")";
+	$account_panel_text = (string)($account_info->NameLine1) . " (" . (string)($account_entity->attributes()->AccountNumber) . ")";
 	
 	$account_json = array(
 		"Collapsible Panel Text" => $account_panel_text,
